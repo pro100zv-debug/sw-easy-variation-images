@@ -9,13 +9,83 @@
 		return $( '.sw-evi-panel' ).first();
 	}
 
-	function replacePanel( html ) {
+	/**
+	 * Images chosen in rows that were not applied yet, so a refresh of the
+	 * panel (after applying another row, undo…) does not lose them.
+	 *
+	 * @param {jQuery} $except Row that was just applied: its choice is not kept.
+	 */
+	function pendingRows( $except ) {
+		var pending = [];
+		panel()
+			.find( 'tr.is-changed' )
+			.each( function () {
+				var $row = $( this );
+				if ( $except && $row.is( $except ) ) {
+					return;
+				}
+				var cells = [];
+				$row.find( '.sw-evi-cell' ).each( function () {
+					var $cell = $( this );
+					cells.push( {
+						multiple: $cell.attr( 'data-multiple' ),
+						ids: $cell.find( '.sw-evi-ids' ).val(),
+						thumbs: $cell.find( '.sw-evi-thumbs' ).html(),
+					} );
+				} );
+				pending.push( {
+					attribute: $row.closest( '.sw-evi-rows' ).attr( 'data-attribute' ),
+					value: $row.attr( 'data-value' ),
+					cells: cells,
+				} );
+			} );
+		return pending;
+	}
+
+	function restorePending( pending ) {
+		$.each( pending, function ( i, item ) {
+			var $row = panel()
+				.find( '.sw-evi-rows' )
+				.filter( function () {
+					return $( this ).attr( 'data-attribute' ) === item.attribute;
+				} )
+				.find( 'tbody tr' )
+				.filter( function () {
+					return $( this ).attr( 'data-value' ) === item.value;
+				} );
+			if ( ! $row.length ) {
+				return;
+			}
+			$.each( item.cells, function ( j, saved ) {
+				var $cell = $row.find( '.sw-evi-cell' ).filter( function () {
+					return $( this ).attr( 'data-multiple' ) === saved.multiple;
+				} );
+				$cell.find( '.sw-evi-ids' ).val( saved.ids );
+				$cell.find( '.sw-evi-thumbs' ).html( saved.thumbs );
+				$cell.find( '.sw-evi-remove' ).prop( 'hidden', ! saved.ids );
+			} );
+			markChanged( $row );
+		} );
+	}
+
+	function replacePanel( html, $appliedRow ) {
 		var $panel = panel();
 		if ( ! $panel.length || 'string' !== typeof html ) {
 			return;
 		}
+		var pending = pendingRows( $appliedRow );
+		var attribute = $panel.find( '.sw-evi-attribute' ).val();
+
 		$panel.find( '.sw-evi-body' ).html( html );
 		$panel.attr( 'data-loaded', '1' );
+
+		// Keep the attribute the user is looking at.
+		if ( attribute && $panel.find( '.sw-evi-attribute option' ).filter( function () {
+			return this.value === attribute;
+		} ).length ) {
+			$panel.find( '.sw-evi-attribute' ).val( attribute ).trigger( 'change' );
+		}
+		restorePending( pending );
 	}
 
 	function openPanel() {
@@ -220,7 +290,7 @@
 					$row.find( '.sw-evi-confirm' ).prop( 'hidden', false );
 					return;
 				}
-				replacePanel( res.data.panel );
+				replacePanel( res.data.panel, $row );
 				if ( res.data.changed ) {
 					reloadVariations();
 				}

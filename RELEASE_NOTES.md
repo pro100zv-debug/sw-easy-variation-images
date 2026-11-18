@@ -1,2 +1,2 @@
-- EN: With WooCommerce 11.1+ the additional images are saved only to the WooCommerce variation gallery (no hidden copy in the legacy WoodMart fields).
-- ES: Con WooCommerce 11.1+ las imágenes adicionales se guardan solo en la galería de variaciones de WooCommerce (sin copia oculta en los campos antiguos de WoodMart).
+- EN: Applying one row no longer discards the images you chose in other rows but have not applied yet.
+- ES: Al aplicar una fila ya no se pierden las imágenes elegidas en otras filas que aún no se han aplicado.
