@@ -1,3 +1,1 @@
-- Compatible con cualquier tema: la imagen principal de la variación es la estándar de WooCommerce.
-- Imágenes adicionales también con la galería nativa de WooCommerce 11.1+ y con el plugin Additional Variation Images Gallery for WooCommerce (además de WoodMart).
-- Autor del plugin: SergioWeb.
+- Icono y banner del plugin (se ven en Plugins y en «Ver detalles» de la actualización).

@@ -1,5 +1,7 @@
 # SW Easy Variation Images
 
+![SW Easy Variation Images](docs/github-social-1280x640.png)
+
 Imágenes de variaciones de WooCommerce sin trabajo repetitivo: eliges **una imagen por valor de atributo** (por ejemplo, por color) y todas las variaciones con ese valor la reciben. Funciona con cualquier tema y es compatible con **WoodMart**.
 
 Un producto con 2 colores y 8 tallas tiene 16 variaciones. En WooCommerce cada una necesita su imagen por separado. Con este plugin eliges 2 imágenes y listo.
