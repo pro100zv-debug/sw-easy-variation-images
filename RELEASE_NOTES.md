@@ -1,2 +1,2 @@
-- EN: Speed fix: the product edit page no longer reads any variation on load. The panel loads only when you open it, reading all variations with two database queries; only variations that change are saved. Errors in the panel never break the product page. Updates are checked only in the admin.
-- ES: Corrección de velocidad: la página de edición del producto ya no lee ninguna variación al cargar. El panel se carga solo al abrirlo y lee todas las variaciones con dos consultas; solo se guardan las variaciones que cambian. Un error en el panel nunca rompe la página del producto. Las actualizaciones se comprueban solo en el admin.
+- EN: With WooCommerce 11.1+ the additional images are saved only to the WooCommerce variation gallery (no hidden copy in the legacy WoodMart fields).
+- ES: Con WooCommerce 11.1+ las imágenes adicionales se guardan solo en la galería de variaciones de WooCommerce (sin copia oculta en los campos antiguos de WoodMart).

@@ -402,9 +402,9 @@ final class SW_EVI_Core {
 					delete_post_meta( $id, self::WVG_META );
 				}
 			}
-			// WoodMart legacy fields: the only storage with old WooCommerce,
-			// and a mirror for WoodMart's deprecated option with WooCommerce 11.1+.
-			if ( 'woodmart' === $provider || ( 'woocommerce' === $provider && self::woodmart_active() ) ) {
+			// WoodMart legacy fields only with WooCommerce older than 11.1.
+			// With 11.1+ the WooCommerce gallery is the single source.
+			if ( 'woodmart' === $provider ) {
 				self::write_woodmart_legacy( $id, $gallery, $parent_id );
 			}
 		}

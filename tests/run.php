@@ -150,7 +150,7 @@ $LOADS = 0;
 $n = SW_EVI_Core::apply( $p, 'pa_color', 'blanco', 21, array( 22, 23 ), 'all' );
 check( 'apply blanco: 4 changed, 4 loads', 4 === $n && 4 === $LOADS );
 check( 'apply blanco: data in DB', 21 === img( 205 ) && '22,23' === gal( 208 ) );
-check( 'apply: woodmart legacy mirror', '22,23' === get_post_meta( 205, 'wd_additional_variation_images_data', true ) );
+check( 'apply: no hidden WoodMart copy with WC 11.1+', '' === get_post_meta( 205, 'wd_additional_variation_images_data', true ) && '' === get_post_meta( 100, 'woodmart_variation_gallery_data', true ) );
 check( 'apply: azul untouched', 11 === img( 201 ) && 0 === img( 203 ) && '' === gal( 201 ) );
 check( 'apply: trashed + any untouched', 0 === img( 301 ) && 0 === img( 300 ) );
 check( 'used flag', SW_EVI_Core::is_used( 100 ) );
@@ -167,7 +167,7 @@ check( 'empty mode: 4 changed (2 get image+gallery, 2 only gallery)', 4 === $n &
 // Undo.
 $n = SW_EVI_Core::undo( $p );
 check( 'undo restores', 4 === $n && 0 === img( 203 ) && '' === gal( 201 ) && 11 === img( 201 ) );
-check( 'undo: legacy mirror cleared', '' === get_post_meta( 201, 'wd_additional_variation_images_data', true ) );
+
 
 // New variation + fill_new.
 $PDO->exec( "INSERT INTO wp_posts VALUES (209,100,'product_variation','publish',50,'')" );
@@ -187,6 +187,15 @@ check( 'fill_new ignored when unused', 0 === SW_EVI_Core::fill_new( $p ) && 0 ==
 SW_EVI_Core::apply( $p, 'pa_color', 'blanco', 21, array( 22, 23 ), 'all' );
 $html = SW_EVI_Admin::panel_html( $p );
 check( 'undo bar shown', false !== strpos( $html, 'sw-evi-undo' ) && false !== strpos( $html, 'Blanco' ) );
+
+// Old WooCommerce + WoodMart: legacy WoodMart fields are the storage.
+$FILTERS['sw_evi_gallery_provider'] = 'woodmart';
+SW_EVI_Core::reset_provider();
+SW_EVI_Core::apply( $p, 'pa_color', 'azul-marino', 11, array( 31, 32 ), 'all' );
+$parent_meta = get_post_meta( 100, 'woodmart_variation_gallery_data', true );
+check( 'legacy WoodMart storage when WC < 11.1', '31,32' === get_post_meta( 201, 'wd_additional_variation_images_data', true ) && is_array( $parent_meta ) && '31,32' === $parent_meta[201] );
+unset( $FILTERS['sw_evi_gallery_provider'] );
+SW_EVI_Core::reset_provider();
 
 // Big product timing: 2 colors x 300 sizes.
 $PDO->exec( 'BEGIN' );
