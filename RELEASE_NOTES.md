@@ -1,1 +1,1 @@
-- Icono y banner del plugin (se ven en Plugins y en «Ver detalles» de la actualización).
+- WoodMart: las imágenes adicionales se guardan en los dos formatos de la galería de variaciones del tema, para que se vean con cualquier método de almacenamiento.

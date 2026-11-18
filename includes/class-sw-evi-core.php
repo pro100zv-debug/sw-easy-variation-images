@@ -312,16 +312,20 @@ final class SW_EVI_Core {
 			delete_post_meta( $vid, self::WD_VARIATION_META );
 		}
 
-		// Keep the older parent-level storage in sync when the product uses it.
+		// Also write the parent-level storage: depending on the WoodMart
+		// "data storage method" option, the theme reads one or the other.
 		$parent_id = $variation->get_parent_id();
 		$parent    = get_post_meta( $parent_id, self::WD_PARENT_META, true );
-		if ( is_array( $parent ) ) {
-			if ( $ids ) {
-				$parent[ $vid ] = implode( ',', $ids );
-			} else {
-				unset( $parent[ $vid ] );
-			}
+		$parent    = is_array( $parent ) ? $parent : array();
+		if ( $ids ) {
+			$parent[ $vid ] = implode( ',', $ids );
+		} else {
+			unset( $parent[ $vid ] );
+		}
+		if ( $parent ) {
 			update_post_meta( $parent_id, self::WD_PARENT_META, $parent );
+		} else {
+			delete_post_meta( $parent_id, self::WD_PARENT_META );
 		}
 	}
 
