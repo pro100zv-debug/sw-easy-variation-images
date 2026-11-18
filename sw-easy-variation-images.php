@@ -2,8 +2,10 @@
 /**
  * Plugin Name:          SW Easy Variation Images
  * Plugin URI:           https://github.com/pro100zv-debug/sw-easy-variation-images
- * Description:          Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Compatible with the WoodMart variation gallery.
- * Version:              1.0.0
+ * Description:          Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Works with any theme; supports variation galleries of WooCommerce, WoodMart and Additional Variation Images Gallery.
+ * Version:              1.1.0
+ * Author:               SergioWeb
+ * Author URI:           https://sergioweb.es/
  * Requires at least:    6.0
  * Requires PHP:         7.4
  * Requires Plugins:     woocommerce
@@ -20,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SW_EVI_VERSION', '1.0.0' );
+define( 'SW_EVI_VERSION', '1.1.0' );
 define( 'SW_EVI_FILE', __FILE__ );
 define( 'SW_EVI_DIR', __DIR__ );
 

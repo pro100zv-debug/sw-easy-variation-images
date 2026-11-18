@@ -15,10 +15,11 @@ PHP_FILES = ["sw-easy-variation-images.php", "includes/class-sw-evi-core.php", "
 
 # Singular strings: msgid -> (es, ru)
 TR = {
-    "Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Compatible with the WoodMart variation gallery.": (
-        "Asigna una imagen por valor de atributo (por ejemplo, por color) y todas las variaciones de WooCommerce con ese valor la reciben. Compatible con la galería de variaciones de WoodMart.",
-        "Задайте одно фото для значения атрибута (например, для цвета) — и все вариации WooCommerce с этим значением получат его. Совместим с галереей вариаций WoodMart.",
+    "Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Works with any theme; supports variation galleries of WooCommerce, WoodMart and Additional Variation Images Gallery.": (
+        "Asigna una imagen por valor de atributo (por ejemplo, por color) y todas las variaciones de WooCommerce con ese valor la reciben. Funciona con cualquier tema; compatible con las galerías de variaciones de WooCommerce, WoodMart y Additional Variation Images Gallery.",
+        "Задайте одно фото для значения атрибута (например, для цвета) — и все вариации WooCommerce с этим значением получат его. Работает с любой темой; поддерживает галереи вариаций WooCommerce, WoodMart и Additional Variation Images Gallery.",
     ),
+    "Additional images": ("Imágenes adicionales", "Доп. изображения"),
     "Choose image": ("Elegir imagen", "Выбрать изображение"),
     "Choose additional images": ("Elegir imágenes adicionales", "Выбрать дополнительные изображения"),
     "Use this image": ("Usar esta imagen", "Использовать это изображение"),

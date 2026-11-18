@@ -8,8 +8,8 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Domain: sw-easy-variation-images\n"
 
-msgid "Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Compatible with the WoodMart variation gallery."
-msgstr "Задайте одно фото для значения атрибута (например, для цвета) — и все вариации WooCommerce с этим значением получат его. Совместим с галереей вариаций WoodMart."
+msgid "Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Works with any theme; supports variation galleries of WooCommerce, WoodMart and Additional Variation Images Gallery."
+msgstr "Задайте одно фото для значения атрибута (например, для цвета) — и все вариации WooCommerce с этим значением получат его. Работает с любой темой; поддерживает галереи вариаций WooCommerce, WoodMart и Additional Variation Images Gallery."
 
 msgid "Choose image"
 msgstr "Выбрать изображение"
@@ -52,6 +52,9 @@ msgstr "Изображение"
 
 msgid "Additional images (WoodMart)"
 msgstr "Доп. изображения (WoodMart)"
+
+msgid "Additional images"
+msgstr "Доп. изображения"
 
 msgid "Variations"
 msgstr "Вариации"

@@ -79,7 +79,7 @@ final class SW_EVI_Admin {
 
 		$current  = SW_EVI_Core::current_attribute( $product, $attributes );
 		$map      = SW_EVI_Core::get_map( $product->get_id() );
-		$woodmart = SW_EVI_Core::woodmart_active();
+		$has_gallery = '' !== SW_EVI_Core::gallery_provider();
 
 		ob_start();
 		?>
@@ -119,8 +119,16 @@ final class SW_EVI_Admin {
 								<tr>
 									<th><?php echo esc_html( $data['label'] ); ?></th>
 									<th><?php esc_html_e( 'Image', 'sw-easy-variation-images' ); ?></th>
-									<?php if ( $woodmart ) : ?>
-										<th><?php esc_html_e( 'Additional images (WoodMart)', 'sw-easy-variation-images' ); ?></th>
+									<?php if ( $has_gallery ) : ?>
+										<th>
+											<?php
+											if ( 'woodmart' === SW_EVI_Core::gallery_provider() ) {
+												esc_html_e( 'Additional images (WoodMart)', 'sw-easy-variation-images' );
+											} else {
+												esc_html_e( 'Additional images', 'sw-easy-variation-images' );
+											}
+											?>
+										</th>
 									<?php endif; ?>
 									<th class="sw-evi-count-col"><?php esc_html_e( 'Variations', 'sw-easy-variation-images' ); ?></th>
 								</tr>
@@ -129,7 +137,7 @@ final class SW_EVI_Admin {
 								<?php
 								foreach ( $data['values'] as $value => $label ) :
 									$variations = isset( $groups[ $value ] ) ? $groups[ $value ] : array();
-									list( $image, $gallery ) = self::prefill( $saved, $value, $variations, $woodmart );
+									list( $image, $gallery ) = self::prefill( $saved, $value, $variations, $has_gallery );
 									?>
 									<tr data-value="<?php echo esc_attr( $value ); ?>">
 										<td class="sw-evi-label"><?php echo esc_html( $label ); ?></td>
@@ -143,7 +151,7 @@ final class SW_EVI_Admin {
 												</span>
 											</div>
 										</td>
-										<?php if ( $woodmart ) : ?>
+										<?php if ( $has_gallery ) : ?>
 											<td>
 												<div class="sw-evi-cell" data-multiple="1" data-cleared="0">
 													<input type="hidden" class="sw-evi-ids" value="<?php echo esc_attr( implode( ',', $gallery ) ); ?>">
@@ -191,7 +199,7 @@ final class SW_EVI_Admin {
 	 *
 	 * @return array( int, int[] )
 	 */
-	private static function prefill( $saved, $value, $variations, $woodmart ) {
+	private static function prefill( $saved, $value, $variations, $has_gallery ) {
 		$image   = isset( $saved[ $value ]['image'] ) ? absint( $saved[ $value ]['image'] ) : 0;
 		$gallery = isset( $saved[ $value ]['gallery'] ) ? SW_EVI_Core::ids( $saved[ $value ]['gallery'] ) : array();
 
@@ -203,12 +211,12 @@ final class SW_EVI_Admin {
 			if ( ! $image && $variation->get_image_id() ) {
 				$image = (int) $variation->get_image_id();
 			}
-			if ( $woodmart && ! $gallery ) {
+			if ( $has_gallery && ! $gallery ) {
 				$gallery = SW_EVI_Core::get_gallery( $variation );
 			}
 		}
 
-		return array( $image, $woodmart ? $gallery : array() );
+		return array( $image, $has_gallery ? $gallery : array() );
 	}
 
 	/**

@@ -1,6 +1,6 @@
 # SW Easy Variation Images
 
-Imágenes de variaciones de WooCommerce sin trabajo repetitivo: eliges **una imagen por valor de atributo** (por ejemplo, por color) y todas las variaciones con ese valor la reciben. Compatible con la galería de variaciones del tema **WoodMart**.
+Imágenes de variaciones de WooCommerce sin trabajo repetitivo: eliges **una imagen por valor de atributo** (por ejemplo, por color) y todas las variaciones con ese valor la reciben. Funciona con cualquier tema y es compatible con **WoodMart**.
 
 Un producto con 2 colores y 8 tallas tiene 16 variaciones. En WooCommerce cada una necesita su imagen por separado. Con este plugin eliges 2 imágenes y listo.
 
@@ -10,7 +10,11 @@ Un producto con 2 colores y 8 tallas tiene 16 variaciones. En WooCommerce cada u
 - **Aplicar a las variaciones**: todas las variaciones con ese valor reciben la imagen (sustituye la actual).
 - **Automático**: las variaciones nuevas sin imagen (por ejemplo, tras «Generar variaciones») la reciben solas al crearlas o al guardar. Las que ya tienen imagen no se tocan.
 - Funciona con cualquier atributo, global o personalizado. Por defecto elige el color; se puede cambiar en el propio panel.
-- **WoodMart**: si el tema está activo, aparece una columna de **imágenes adicionales** (galería de la variación) que se reparte igual.
+- **Imágenes adicionales** (galería de la variación): si hay dónde guardarlas, aparece una columna más que se reparte igual. Se detecta solo:
+  - tema **WoodMart** (su galería de variaciones);
+  - plugin **Additional Variation Images Gallery for WooCommerce**;
+  - **WooCommerce 11.1+** (galería de variaciones nativa).
+- Con cualquier otro tema (Storefront, Astra, Kadence, Flatsome…) funciona la imagen principal de la variación, que es la estándar de WooCommerce.
 - Inglés por defecto; español y ruso automáticos según el idioma de WordPress.
 
 ## Instalación
@@ -26,7 +30,7 @@ Las siguientes versiones llegan como actualización normal en **Plugins**.
 ## Uso
 
 1. Elige el atributo en **Compartir imágenes por** (normalmente ya viene el color).
-2. Pulsa **Elegir** en cada valor y selecciona la imagen. Con WoodMart, también las imágenes adicionales.
+2. Pulsa **Elegir** en cada valor y selecciona la imagen y, si aparece la columna, las imágenes adicionales.
 3. Pulsa **Aplicar a las variaciones**.
 
 Las variaciones con «Cualquier …» en ese atributo no se modifican.
@@ -35,7 +39,8 @@ Las variaciones con «Cualquier …» en ese atributo no se modifican.
 
 - `sw_evi_default_attribute` — atributo por defecto (`string $key, WC_Product $product, array $attributes`).
 - `sw_evi_autofill` — devolver `false` para desactivar el relleno automático (`bool $enabled, int $product_id`).
-- `sw_evi_woodmart_gallery` — forzar la compatibilidad con la galería de WoodMart (`bool $active`).
+- `sw_evi_gallery_provider` — dónde se guardan las imágenes adicionales: `woodmart`, `wvg`, `woocommerce` o `''` para desactivarlas.
+- `sw_evi_woodmart_gallery` — forzar la detección de WoodMart (`bool $active`).
 - `sw_evi_applied` — acción tras aplicar (`int $product_id, string $attribute, int[] $variation_ids`).
 
 ## Publicar una nueva versión

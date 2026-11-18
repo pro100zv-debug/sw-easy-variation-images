@@ -21,6 +21,12 @@ final class SW_EVI_Core {
 	/** WoodMart (older storage): array on the parent product, variation_id => "1,2,3". */
 	const WD_PARENT_META = 'woodmart_variation_gallery_data';
 
+	/** "Additional Variation Images Gallery for WooCommerce" plugin: array of IDs on the variation. */
+	const WVG_META = 'woo_variation_gallery_images';
+
+	/** Detected gallery provider, cached per request. */
+	private static $provider = null;
+
 	/** True while this plugin itself is writing variations (prevents loops). */
 	private static $busy = false;
 
@@ -61,6 +67,45 @@ final class SW_EVI_Core {
 		 * @param bool $active
 		 */
 		return (bool) apply_filters( 'sw_evi_woodmart_gallery', $active );
+	}
+
+	/**
+	 * Where the additional images (gallery) of a variation are stored:
+	 * - "woodmart":    WoodMart theme;
+	 * - "wvg":         "Additional Variation Images Gallery for WooCommerce" plugin;
+	 * - "woocommerce": native variation gallery of WooCommerce 11.1+;
+	 * - "":            no variation gallery, only the main image is shared.
+	 */
+	public static function gallery_provider() {
+		if ( null !== self::$provider ) {
+			return self::$provider;
+		}
+
+		$provider = '';
+		if ( self::woodmart_active() ) {
+			$provider = 'woodmart';
+		} elseif ( class_exists( 'Woo_Variation_Gallery' ) || function_exists( 'woo_variation_gallery' ) ) {
+			$provider = 'wvg';
+		} elseif ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '11.1', '>=' ) ) {
+			$provider = 'woocommerce';
+		}
+
+		/**
+		 * Change or disable the variation gallery support.
+		 *
+		 * @param string $provider "woodmart", "wvg", "woocommerce" or "" (off).
+		 */
+		$provider = (string) apply_filters( 'sw_evi_gallery_provider', $provider );
+
+		self::$provider = in_array( $provider, array( 'woodmart', 'wvg', 'woocommerce' ), true ) ? $provider : '';
+		return self::$provider;
+	}
+
+	/**
+	 * Forget the detected provider (used by tests and after theme switches).
+	 */
+	public static function reset_provider() {
+		self::$provider = null;
 	}
 
 	/* ---------- Attributes ---------- */
@@ -199,29 +244,66 @@ final class SW_EVI_Core {
 		return $groups;
 	}
 
-	/* ---------- WoodMart gallery ---------- */
+	/* ---------- Variation gallery (additional images) ---------- */
 
 	/**
+	 * Additional images of a variation, from the active provider.
+	 *
 	 * @return int[]
 	 */
 	public static function get_gallery( $variation ) {
-		$raw = get_post_meta( $variation->get_id(), self::WD_VARIATION_META, true );
+		switch ( self::gallery_provider() ) {
+			case 'woodmart':
+				$raw = get_post_meta( $variation->get_id(), self::WD_VARIATION_META, true );
+				if ( '' === $raw || false === $raw ) {
+					$parent = get_post_meta( $variation->get_parent_id(), self::WD_PARENT_META, true );
+					if ( is_array( $parent ) && isset( $parent[ $variation->get_id() ] ) ) {
+						$raw = $parent[ $variation->get_id() ];
+					}
+				}
+				return self::ids( $raw );
 
-		if ( '' === $raw || false === $raw ) {
-			$parent = get_post_meta( $variation->get_parent_id(), self::WD_PARENT_META, true );
-			if ( is_array( $parent ) && isset( $parent[ $variation->get_id() ] ) ) {
-				$raw = $parent[ $variation->get_id() ];
-			}
+			case 'wvg':
+				return self::ids( get_post_meta( $variation->get_id(), self::WVG_META, true ) );
+
+			case 'woocommerce':
+				return self::ids( $variation->get_gallery_image_ids( 'edit' ) );
 		}
+		return array();
+	}
 
-		return self::ids( $raw );
+	/**
+	 * Save the additional images of a variation in the active provider.
+	 *
+	 * @param int[] $ids
+	 */
+	public static function set_gallery( $variation, $ids ) {
+		$ids = self::ids( $ids );
+
+		switch ( self::gallery_provider() ) {
+			case 'woodmart':
+				self::set_woodmart_gallery( $variation, $ids );
+				break;
+
+			case 'wvg':
+				if ( $ids ) {
+					update_post_meta( $variation->get_id(), self::WVG_META, $ids );
+				} else {
+					delete_post_meta( $variation->get_id(), self::WVG_META );
+				}
+				break;
+
+			case 'woocommerce':
+				$variation->set_gallery_image_ids( $ids );
+				$variation->save();
+				break;
+		}
 	}
 
 	/**
 	 * @param int[] $ids
 	 */
-	public static function set_gallery( $variation, $ids ) {
-		$ids = self::ids( $ids );
+	private static function set_woodmart_gallery( $variation, $ids ) {
 		$vid = $variation->get_id();
 
 		if ( $ids ) {
@@ -281,7 +363,7 @@ final class SW_EVI_Core {
 			return array( 'variations' => 0 );
 		}
 
-		$woodmart = self::woodmart_active();
+		$has_gallery = '' !== self::gallery_provider();
 		$groups   = self::groups( $product, $attribute );
 		$map      = array(
 			'attribute' => $attribute,
@@ -318,7 +400,7 @@ final class SW_EVI_Core {
 					}
 				}
 
-				if ( $woodmart && ( $gallery || ! empty( $row['clear_gallery'] ) ) ) {
+				if ( $has_gallery && ( $gallery || ! empty( $row['clear_gallery'] ) ) ) {
 					if ( self::get_gallery( $variation ) !== $gallery ) {
 						self::set_gallery( $variation, $gallery );
 						$changed[ $vid ] = true;
@@ -381,7 +463,7 @@ final class SW_EVI_Core {
 
 		$map      = self::get_map( $product_id );
 		$saved    = $map['attribute'] === $attribute ? $map['values'] : array();
-		$woodmart = self::woodmart_active();
+		$has_gallery = '' !== self::gallery_provider();
 		$changed  = array();
 
 		self::$busy = true;
@@ -398,7 +480,7 @@ final class SW_EVI_Core {
 				if ( ! $image && $variation->get_image_id() ) {
 					$image = (int) $variation->get_image_id();
 				}
-				if ( $woodmart && ! $gallery ) {
+				if ( $has_gallery && ! $gallery ) {
 					$gallery = self::get_gallery( $variation );
 				}
 			}
@@ -409,7 +491,7 @@ final class SW_EVI_Core {
 					$variation->save();
 					$changed[ $variation->get_id() ] = true;
 				}
-				if ( $woodmart && $gallery && ! self::get_gallery( $variation ) ) {
+				if ( $has_gallery && $gallery && ! self::get_gallery( $variation ) ) {
 					self::set_gallery( $variation, $gallery );
 					$changed[ $variation->get_id() ] = true;
 				}

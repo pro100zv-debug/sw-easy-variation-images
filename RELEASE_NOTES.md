@@ -1,4 +1,3 @@
-- Primera versión: panel «Imágenes por atributo» en la pestaña Variaciones, una imagen por valor (por ejemplo, por color) para todas sus variaciones.
-- Relleno automático de las variaciones nuevas sin imagen.
-- Compatibilidad con la galería de imágenes adicionales de variaciones de WoodMart.
-- Inglés por defecto; español y ruso automáticos según el idioma de WordPress.
+- Compatible con cualquier tema: la imagen principal de la variación es la estándar de WooCommerce.
+- Imágenes adicionales también con la galería nativa de WooCommerce 11.1+ y con el plugin Additional Variation Images Gallery for WooCommerce (además de WoodMart).
+- Autor del plugin: SergioWeb.
