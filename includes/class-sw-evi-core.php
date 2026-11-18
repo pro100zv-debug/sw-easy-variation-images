@@ -405,8 +405,13 @@ final class SW_EVI_Core {
 				}
 
 				if ( $has_gallery && ( $gallery || ! empty( $row['clear_gallery'] ) ) ) {
-					if ( self::get_gallery( $variation ) !== $gallery ) {
+					$differs = self::get_gallery( $variation ) !== $gallery;
+					// WoodMart keeps the gallery in two places; always rewrite both so
+					// a second "Apply" repairs data saved by older versions.
+					if ( $differs || 'woodmart' === self::gallery_provider() ) {
 						self::set_gallery( $variation, $gallery );
+					}
+					if ( $differs ) {
 						$changed[ $vid ] = true;
 					}
 				}

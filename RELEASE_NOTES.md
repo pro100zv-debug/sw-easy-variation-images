@@ -1,1 +1,1 @@
-- WoodMart: las imágenes adicionales se guardan en los dos formatos de la galería de variaciones del tema, para que se vean con cualquier método de almacenamiento.
+- WoodMart: al pulsar «Aplicar a las variaciones» de nuevo, la galería de variaciones se vuelve a guardar en los dos formatos del tema.
