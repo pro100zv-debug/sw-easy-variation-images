@@ -9,34 +9,16 @@
 		return $( '.sw-evi-panel' ).first();
 	}
 
-	function setStatus( text, isError ) {
-		panel()
-			.find( '.sw-evi-status' )
-			.text( text || '' )
-			.toggleClass( 'is-error', !! isError );
-	}
-
-	function setDirty( dirty ) {
-		var $panel = panel();
-		$panel.toggleClass( 'is-dirty', !! dirty );
-		setStatus( dirty ? i18n.unsavedPanel : '' );
-	}
-
-	function busy( on ) {
-		var $panel = panel();
-		$panel.find( '.spinner' ).toggleClass( 'is-active', !! on );
-		$panel.find( '.sw-evi-apply' ).prop( 'disabled', !! on );
-	}
-
-	function replacePanel( html ) {
+	function replacePanel( html, keepOpen ) {
 		var $old = panel();
 		if ( ! $old.length || ! html ) {
 			return;
 		}
-		var collapsed = $old.hasClass( 'is-collapsed' );
 		var $new = $( html );
-		$new.toggleClass( 'is-collapsed', collapsed );
-		$new.find( '.sw-evi-toggle' ).attr( 'aria-expanded', collapsed ? 'false' : 'true' );
+		if ( keepOpen ) {
+			$new.removeClass( 'is-collapsed' );
+			$new.find( '.sw-evi-toggle' ).attr( 'aria-expanded', 'true' );
+		}
 		$old.replaceWith( $new );
 	}
 
@@ -52,7 +34,7 @@
 				{
 					action: action,
 					nonce: data.nonce,
-					product_id: panel().data( 'product-id' ),
+					product_id: panel().attr( 'data-product-id' ),
 				},
 				extra || {}
 			)
@@ -74,6 +56,21 @@
 		} );
 	}
 
+	function markChanged( $row ) {
+		$row.addClass( 'is-changed' );
+		$row.find( '.sw-evi-state' ).text( i18n.changed );
+	}
+
+	function rowBusy( $row, on ) {
+		$row.find( '.spinner' ).toggleClass( 'is-active', !! on );
+		$row.find( 'button' ).prop( 'disabled', !! on );
+	}
+
+	function showError( $row ) {
+		rowBusy( $row, false );
+		$row.find( '.sw-evi-state' ).text( i18n.error ).addClass( 'is-error' );
+	}
+
 	/* ---------- Attribute selector and collapse ---------- */
 
 	$( document ).on( 'change', '.sw-evi-attribute', function () {
@@ -84,7 +81,6 @@
 				var $rows = $( this );
 				$rows.prop( 'hidden', $rows.attr( 'data-attribute' ) !== value );
 			} );
-		setDirty( true );
 	} );
 
 	$( document ).on( 'click', '.sw-evi-toggle', function () {
@@ -133,10 +129,9 @@
 				return att.id;
 			} );
 			$cell.find( '.sw-evi-ids' ).val( ids.join( ',' ) );
-			$cell.attr( 'data-cleared', ids.length ? '0' : '1' );
 			$cell.find( '.sw-evi-remove' ).prop( 'hidden', ! ids.length );
 			renderThumbs( $cell, attachments );
-			setDirty( true );
+			markChanged( $cell.closest( 'tr' ) );
 		} );
 
 		frame.open();
@@ -147,82 +142,112 @@
 		var $cell = $( this ).closest( '.sw-evi-cell' );
 		$cell.find( '.sw-evi-ids' ).val( '' );
 		$cell.find( '.sw-evi-thumbs' ).empty();
-		$cell.attr( 'data-cleared', '1' );
 		$( this ).prop( 'hidden', true );
-		setDirty( true );
+		markChanged( $cell.closest( 'tr' ) );
 	} );
 
-	/* ---------- Apply ---------- */
+	/* ---------- Apply one row ---------- */
 
-	$( document ).on( 'click', '.sw-evi-apply', function ( e ) {
-		e.preventDefault();
-
+	function applyRow( $row, mode ) {
 		if ( hasUnsavedVariations() ) {
 			window.alert( i18n.unsaved );
 			return;
 		}
 
-		var $panel = panel();
-		var attribute = $panel.find( '.sw-evi-attribute' ).val();
-		var rows = [];
+		var $cells = $row.find( '.sw-evi-cell' );
+		var $gallery = $cells.filter( '[data-multiple="1"]' );
 
-		$panel
-			.find( '.sw-evi-rows' )
-			.filter( function () {
-				return $( this ).attr( 'data-attribute' ) === attribute;
-			} )
-			.find( 'tbody tr' )
-			.each( function () {
-				var $row = $( this );
-				var $cells = $row.find( '.sw-evi-cell' );
-				var $image = $cells.filter( '[data-multiple="0"]' );
-				var $gallery = $cells.filter( '[data-multiple="1"]' );
-
-				rows.push( {
-					value: String( $row.attr( 'data-value' ) ),
-					image: $image.find( '.sw-evi-ids' ).val() || 0,
-					clear_image: $image.attr( 'data-cleared' ) === '1' ? 1 : 0,
-					gallery: $gallery.length ? $gallery.find( '.sw-evi-ids' ).val() || '' : '',
-					clear_gallery: $gallery.attr( 'data-cleared' ) === '1' ? 1 : 0,
-				} );
-			} );
-
-		busy( true );
-		setStatus( i18n.working );
+		rowBusy( $row, true );
+		$row.find( '.sw-evi-state' ).text( i18n.working ).removeClass( 'is-error' );
 
 		request( 'sw_evi_apply', {
-			attribute: attribute,
-			rows: JSON.stringify( rows ),
+			attribute: $row.closest( '.sw-evi-rows' ).attr( 'data-attribute' ),
+			value: $row.attr( 'data-value' ),
+			image: $cells.filter( '[data-multiple="0"]' ).find( '.sw-evi-ids' ).val() || 0,
+			gallery: $gallery.length ? $gallery.find( '.sw-evi-ids' ).val() || '' : '',
+			mode: mode || '',
 		} )
 			.done( function ( res ) {
 				if ( ! res || ! res.success ) {
-					busy( false );
-					setStatus( i18n.error, true );
+					showError( $row );
 					return;
 				}
-				replacePanel( res.data.panel );
-				setStatus( res.data.message );
-				reloadVariations();
+				if ( res.data.confirm ) {
+					rowBusy( $row, false );
+					$row.find( '.sw-evi-apply' ).prop( 'hidden', true );
+					$row.find( '.sw-evi-confirm-text' ).text( res.data.message );
+					$row.find( '.sw-evi-confirm' ).prop( 'hidden', false );
+					return;
+				}
+				replacePanel( res.data.panel, true );
+				if ( res.data.changed ) {
+					reloadVariations();
+				}
 			} )
 			.fail( function () {
-				busy( false );
-				setStatus( i18n.error, true );
+				showError( $row );
+			} );
+	}
+
+	$( document ).on( 'click', '.sw-evi-apply', function ( e ) {
+		e.preventDefault();
+		applyRow( $( this ).closest( 'tr' ), '' );
+	} );
+
+	$( document ).on( 'click', '.sw-evi-apply-all', function ( e ) {
+		e.preventDefault();
+		applyRow( $( this ).closest( 'tr' ), 'all' );
+	} );
+
+	$( document ).on( 'click', '.sw-evi-apply-empty', function ( e ) {
+		e.preventDefault();
+		applyRow( $( this ).closest( 'tr' ), 'empty' );
+	} );
+
+	$( document ).on( 'click', '.sw-evi-cancel', function ( e ) {
+		e.preventDefault();
+		var $row = $( this ).closest( 'tr' );
+		$row.find( '.sw-evi-confirm' ).prop( 'hidden', true );
+		$row.find( '.sw-evi-apply' ).prop( 'hidden', false );
+	} );
+
+	/* ---------- Undo ---------- */
+
+	$( document ).on( 'click', '.sw-evi-undo', function ( e ) {
+		e.preventDefault();
+		if ( hasUnsavedVariations() ) {
+			window.alert( i18n.unsaved );
+			return;
+		}
+		var $btn = $( this ).prop( 'disabled', true );
+		request( 'sw_evi_undo' )
+			.done( function ( res ) {
+				if ( res && res.success ) {
+					replacePanel( res.data.panel, true );
+					reloadVariations();
+				} else {
+					$btn.prop( 'disabled', false );
+				}
+			} )
+			.fail( function () {
+				$btn.prop( 'disabled', false );
 			} );
 	} );
 
-	/* ---------- Keep new variations and the panel in sync ---------- */
+	/* ---------- New variations ---------- */
 
-	// After "Generate variations" or "Add manually": give images to the new ones.
+	// After "Generate variations" or "Add manually". The server only fills
+	// variations without images, and only in products where the panel was used.
 	$( document ).on( 'woocommerce_variations_added', '#variable_product_options', function () {
-		if ( ! panel().length ) {
+		if ( ! panel().length || panel().find( 'tr.is-changed' ).length ) {
 			return;
 		}
-		request( 'sw_evi_autofill' ).done( function ( res ) {
+		request( 'sw_evi_fill_new' ).done( function ( res ) {
 			if ( ! res || ! res.success ) {
 				return;
 			}
-			if ( ! panel().hasClass( 'is-dirty' ) ) {
-				replacePanel( res.data.panel );
+			if ( ! panel().find( 'tr.is-changed' ).length ) {
+				replacePanel( res.data.panel, ! panel().hasClass( 'is-collapsed' ) );
 			}
 			if ( res.data.changed ) {
 				reloadVariations();
@@ -230,14 +255,14 @@
 		} );
 	} );
 
-	// After saving variations the counts and images may have changed.
+	// After saving variations by hand, refresh the counters in the panel.
 	$( document ).on( 'woocommerce_variations_saved', '#woocommerce-product-data', function () {
-		if ( ! panel().length || panel().hasClass( 'is-dirty' ) ) {
+		if ( ! panel().length || panel().find( 'tr.is-changed' ).length ) {
 			return;
 		}
 		request( 'sw_evi_panel' ).done( function ( res ) {
-			if ( res && res.success && ! panel().hasClass( 'is-dirty' ) ) {
-				replacePanel( res.data.panel );
+			if ( res && res.success && ! panel().find( 'tr.is-changed' ).length ) {
+				replacePanel( res.data.panel, ! panel().hasClass( 'is-collapsed' ) );
 			}
 		} );
 	} );

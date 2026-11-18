@@ -26,14 +26,23 @@ msgstr "Использовать эти изображения"
 msgid "There are unsaved changes in the variations. Save them first, then apply the images."
 msgstr "В вариациях есть несохранённые изменения. Сначала сохраните их, затем примените изображения."
 
-msgid "Images chosen but not applied yet."
-msgstr "Изображения выбраны, но ещё не применены."
+msgid "Changed, not applied yet"
+msgstr "Изменено, не применено"
 
-msgid "Applying…"
-msgstr "Применяю…"
+msgid "Working…"
+msgstr "Выполняется…"
 
 msgid "Something went wrong. Reload the page and try again."
 msgstr "Что-то пошло не так. Перезагрузите страницу и попробуйте ещё раз."
+
+msgid "WooCommerce variation gallery"
+msgstr "галерея вариаций WooCommerce"
+
+msgid "WoodMart variation gallery"
+msgstr "галерея вариаций WoodMart"
+
+msgid "Additional Variation Images Gallery plugin"
+msgstr "плагин Additional Variation Images Gallery"
 
 msgid "Images by attribute"
 msgstr "Изображения по атрибуту"
@@ -47,14 +56,24 @@ msgstr "Скрыть"
 msgid "Show"
 msgstr "Показать"
 
-msgid "Image"
-msgstr "Изображение"
+msgid "The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed."
+msgstr "Панель показывает текущие изображения вариаций. Ничего не меняется, пока вы не нажмёте «Применить» в строке: меняются только вариации этого значения."
 
-msgid "Additional images (WoodMart)"
-msgstr "Доп. изображения (WoodMart)"
+#, php-format
+msgid "Additional images are saved to: %s."
+msgstr "Доп. изображения сохраняются в: %s."
 
-msgid "Additional images"
-msgstr "Доп. изображения"
+msgid "This site has no variation gallery, so only the main image of the variations is shared."
+msgstr "На этом сайте нет галереи вариаций, поэтому раздаётся только основное изображение."
+
+msgid "Undo"
+msgstr "Отменить"
+
+msgid "Main image"
+msgstr "Основное изображение"
+
+msgid "Additional images (gallery)"
+msgstr "Доп. изображения (галерея)"
 
 msgid "Variations"
 msgstr "Вариации"
@@ -71,14 +90,37 @@ msgstr "Выбрать"
 msgid "Remove"
 msgstr "Убрать"
 
-msgid "Apply to variations"
-msgstr "Применить к вариациям"
+msgid "Replace in all"
+msgstr "Заменить у всех"
 
-msgid "Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them."
-msgstr "Выберите изображение для каждого значения и нажмите «Применить к вариациям»: все вариации с этим значением получат его вместо текущего. Новые вариации без изображения получают его автоматически при сохранении."
+msgid "Only empty ones"
+msgstr "Только у пустых"
 
-msgid "Done: all variations already had these images."
-msgstr "Готово: у всех вариаций уже были эти изображения."
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "No variations"
+msgstr "Нет вариаций"
+
+msgid "all the same"
+msgstr "у всех одинаковые"
+
+msgid "Nothing to change: the variations already had these images."
+msgstr "Нечего менять: у вариаций уже были эти изображения."
+
+#, php-format
+msgid "Last change: %1$s, %2$d variation."
+msgid_plural "Last change: %1$s, %2$d variations."
+msgstr[0] "Последнее изменение: %1$s, %2$d вариация."
+msgstr[1] "Последнее изменение: %1$s, %2$d вариации."
+msgstr[2] "Последнее изменение: %1$s, %2$d вариаций."
+
+#, php-format
+msgid "Apply to %d variation"
+msgid_plural "Apply to %d variations"
+msgstr[0] "Применить к %d вариации"
+msgstr[1] "Применить к %d вариациям"
+msgstr[2] "Применить к %d вариациям"
 
 #, php-format
 msgid "%d variation uses “Any” for this attribute and is not changed."
@@ -88,8 +130,50 @@ msgstr[1] "%d вариации используют «Любое значени�
 msgstr[2] "%d вариаций используют «Любое значение» для этого атрибута и не изменяются."
 
 #, php-format
+msgid "%d variation"
+msgid_plural "%d variations"
+msgstr[0] "%d вариация"
+msgstr[1] "%d вариации"
+msgstr[2] "%d вариаций"
+
+#, php-format
+msgid "%d with other images"
+msgid_plural "%d with other images"
+msgstr[0] "у %d другие фото"
+msgstr[1] "у %d другие фото"
+msgstr[2] "у %d другие фото"
+
+#, php-format
+msgid "%d without images"
+msgid_plural "%d without images"
+msgstr[0] "%d без фото"
+msgstr[1] "%d без фото"
+msgstr[2] "%d без фото"
+
+#, php-format
+msgid "%d variation already has other images. Replace them too?"
+msgid_plural "%d variations already have other images. Replace them too?"
+msgstr[0] "У %d вариации уже другие изображения. Заменить и их?"
+msgstr[1] "У %d вариаций уже другие изображения. Заменить и их?"
+msgstr[2] "У %d вариаций уже другие изображения. Заменить и их?"
+
+#, php-format
 msgid "Done: %d variation updated."
 msgid_plural "Done: %d variations updated."
 msgstr[0] "Готово: обновлена %d вариация."
 msgstr[1] "Готово: обновлены %d вариации."
 msgstr[2] "Готово: обновлено %d вариаций."
+
+#, php-format
+msgid "Undone: %d variation restored."
+msgid_plural "Undone: %d variations restored."
+msgstr[0] "Отменено: восстановлена %d вариация."
+msgstr[1] "Отменено: восстановлены %d вариации."
+msgstr[2] "Отменено: восстановлено %d вариаций."
+
+#, php-format
+msgid "New variations: %d got the images of their value."
+msgid_plural "New variations: %d got the images of their value."
+msgstr[0] "Новые вариации: %d получила изображения своего значения."
+msgstr[1] "Новые вариации: %d получили изображения своего значения."
+msgstr[2] "Новые вариации: %d получили изображения своего значения."

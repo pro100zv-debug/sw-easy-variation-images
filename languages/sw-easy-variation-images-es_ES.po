@@ -26,14 +26,23 @@ msgstr "Usar estas imágenes"
 msgid "There are unsaved changes in the variations. Save them first, then apply the images."
 msgstr "Hay cambios sin guardar en las variaciones. Guárdalos primero y después aplica las imágenes."
 
-msgid "Images chosen but not applied yet."
-msgstr "Imágenes elegidas, pero aún no aplicadas."
+msgid "Changed, not applied yet"
+msgstr "Cambiado, sin aplicar"
 
-msgid "Applying…"
-msgstr "Aplicando…"
+msgid "Working…"
+msgstr "Procesando…"
 
 msgid "Something went wrong. Reload the page and try again."
 msgstr "Algo ha fallado. Recarga la página e inténtalo de nuevo."
+
+msgid "WooCommerce variation gallery"
+msgstr "galería de variaciones de WooCommerce"
+
+msgid "WoodMart variation gallery"
+msgstr "galería de variaciones de WoodMart"
+
+msgid "Additional Variation Images Gallery plugin"
+msgstr "plugin Additional Variation Images Gallery"
 
 msgid "Images by attribute"
 msgstr "Imágenes por atributo"
@@ -47,14 +56,24 @@ msgstr "Ocultar"
 msgid "Show"
 msgstr "Mostrar"
 
-msgid "Image"
-msgstr "Imagen"
+msgid "The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed."
+msgstr "El panel muestra las imágenes actuales de las variaciones. No se cambia nada hasta que pulses «Aplicar» en una fila: solo cambian las variaciones de ese valor."
 
-msgid "Additional images (WoodMart)"
-msgstr "Imágenes adicionales (WoodMart)"
+#, php-format
+msgid "Additional images are saved to: %s."
+msgstr "Las imágenes adicionales se guardan en: %s."
 
-msgid "Additional images"
-msgstr "Imágenes adicionales"
+msgid "This site has no variation gallery, so only the main image of the variations is shared."
+msgstr "Este sitio no tiene galería de variaciones, así que solo se comparte la imagen principal."
+
+msgid "Undo"
+msgstr "Deshacer"
+
+msgid "Main image"
+msgstr "Imagen principal"
+
+msgid "Additional images (gallery)"
+msgstr "Imágenes adicionales (galería)"
 
 msgid "Variations"
 msgstr "Variaciones"
@@ -71,14 +90,35 @@ msgstr "Elegir"
 msgid "Remove"
 msgstr "Quitar"
 
-msgid "Apply to variations"
-msgstr "Aplicar a las variaciones"
+msgid "Replace in all"
+msgstr "Sustituir en todas"
 
-msgid "Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them."
-msgstr "Elige una imagen para cada valor y pulsa «Aplicar a las variaciones»: todas las variaciones con ese valor la reciben y sustituye a su imagen actual. Las variaciones nuevas sin imagen la reciben automáticamente al guardarlas."
+msgid "Only empty ones"
+msgstr "Solo las vacías"
 
-msgid "Done: all variations already had these images."
-msgstr "Hecho: todas las variaciones ya tenían estas imágenes."
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "No variations"
+msgstr "Sin variaciones"
+
+msgid "all the same"
+msgstr "todas iguales"
+
+msgid "Nothing to change: the variations already had these images."
+msgstr "Nada que cambiar: las variaciones ya tenían estas imágenes."
+
+#, php-format
+msgid "Last change: %1$s, %2$d variation."
+msgid_plural "Last change: %1$s, %2$d variations."
+msgstr[0] "Último cambio: %1$s, %2$d variación."
+msgstr[1] "Último cambio: %1$s, %2$d variaciones."
+
+#, php-format
+msgid "Apply to %d variation"
+msgid_plural "Apply to %d variations"
+msgstr[0] "Aplicar a %d variación"
+msgstr[1] "Aplicar a %d variaciones"
 
 #, php-format
 msgid "%d variation uses “Any” for this attribute and is not changed."
@@ -87,7 +127,43 @@ msgstr[0] "%d variación usa «Cualquiera» en este atributo y no se modifica."
 msgstr[1] "%d variaciones usan «Cualquiera» en este atributo y no se modifican."
 
 #, php-format
+msgid "%d variation"
+msgid_plural "%d variations"
+msgstr[0] "%d variación"
+msgstr[1] "%d variaciones"
+
+#, php-format
+msgid "%d with other images"
+msgid_plural "%d with other images"
+msgstr[0] "%d con otras imágenes"
+msgstr[1] "%d con otras imágenes"
+
+#, php-format
+msgid "%d without images"
+msgid_plural "%d without images"
+msgstr[0] "%d sin imágenes"
+msgstr[1] "%d sin imágenes"
+
+#, php-format
+msgid "%d variation already has other images. Replace them too?"
+msgid_plural "%d variations already have other images. Replace them too?"
+msgstr[0] "%d variación ya tiene otras imágenes. ¿Sustituirlas también?"
+msgstr[1] "%d variaciones ya tienen otras imágenes. ¿Sustituirlas también?"
+
+#, php-format
 msgid "Done: %d variation updated."
 msgid_plural "Done: %d variations updated."
 msgstr[0] "Hecho: %d variación actualizada."
 msgstr[1] "Hecho: %d variaciones actualizadas."
+
+#, php-format
+msgid "Undone: %d variation restored."
+msgid_plural "Undone: %d variations restored."
+msgstr[0] "Deshecho: %d variación restaurada."
+msgstr[1] "Deshecho: %d variaciones restauradas."
+
+#, php-format
+msgid "New variations: %d got the images of their value."
+msgid_plural "New variations: %d got the images of their value."
+msgstr[0] "Variaciones nuevas: %d recibieron las imágenes de su valor."
+msgstr[1] "Variaciones nuevas: %d recibieron las imágenes de su valor."

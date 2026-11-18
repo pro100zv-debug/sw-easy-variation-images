@@ -19,7 +19,6 @@ TR = {
         "Asigna una imagen por valor de atributo (por ejemplo, por color) y todas las variaciones de WooCommerce con ese valor la reciben. Funciona con cualquier tema; compatible con las galerías de variaciones de WooCommerce, WoodMart y Additional Variation Images Gallery.",
         "Задайте одно фото для значения атрибута (например, для цвета) — и все вариации WooCommerce с этим значением получат его. Работает с любой темой; поддерживает галереи вариаций WooCommerce, WoodMart и Additional Variation Images Gallery.",
     ),
-    "Additional images": ("Imágenes adicionales", "Доп. изображения"),
     "Choose image": ("Elegir imagen", "Выбрать изображение"),
     "Choose additional images": ("Elegir imágenes adicionales", "Выбрать дополнительные изображения"),
     "Use this image": ("Usar esta imagen", "Использовать это изображение"),
@@ -28,11 +27,6 @@ TR = {
         "Hay cambios sin guardar en las variaciones. Guárdalos primero y después aplica las imágenes.",
         "В вариациях есть несохранённые изменения. Сначала сохраните их, затем примените изображения.",
     ),
-    "Images chosen but not applied yet.": (
-        "Imágenes elegidas, pero aún no aplicadas.",
-        "Изображения выбраны, но ещё не применены.",
-    ),
-    "Applying…": ("Aplicando…", "Применяю…"),
     "Something went wrong. Reload the page and try again.": (
         "Algo ha fallado. Recarga la página e inténtalo de nuevo.",
         "Что-то пошло не так. Перезагрузите страницу и попробуйте ещё раз.",
@@ -41,24 +35,71 @@ TR = {
     "Share images by:": ("Compartir imágenes por:", "Общие изображения по:"),
     "Hide": ("Ocultar", "Скрыть"),
     "Show": ("Mostrar", "Показать"),
-    "Image": ("Imagen", "Изображение"),
-    "Additional images (WoodMart)": ("Imágenes adicionales (WoodMart)", "Доп. изображения (WoodMart)"),
     "Variations": ("Variaciones", "Вариации"),
     "Choose": ("Elegir", "Выбрать"),
     "Remove": ("Quitar", "Убрать"),
-    "Apply to variations": ("Aplicar a las variaciones", "Применить к вариациям"),
-    "Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them.": (
-        "Elige una imagen para cada valor y pulsa «Aplicar a las variaciones»: todas las variaciones con ese valor la reciben y sustituye a su imagen actual. Las variaciones nuevas sin imagen la reciben automáticamente al guardarlas.",
-        "Выберите изображение для каждого значения и нажмите «Применить к вариациям»: все вариации с этим значением получат его вместо текущего. Новые вариации без изображения получают его автоматически при сохранении.",
+    "Changed, not applied yet": ("Cambiado, sin aplicar", "Изменено, не применено"),
+    "Working…": ("Procesando…", "Выполняется…"),
+    "WooCommerce variation gallery": ("galería de variaciones de WooCommerce", "галерея вариаций WooCommerce"),
+    "WoodMart variation gallery": ("galería de variaciones de WoodMart", "галерея вариаций WoodMart"),
+    "Additional Variation Images Gallery plugin": ("plugin Additional Variation Images Gallery", "плагин Additional Variation Images Gallery"),
+    "The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed.": (
+        "El panel muestra las imágenes actuales de las variaciones. No se cambia nada hasta que pulses «Aplicar» en una fila: solo cambian las variaciones de ese valor.",
+        "Панель показывает текущие изображения вариаций. Ничего не меняется, пока вы не нажмёте «Применить» в строке: меняются только вариации этого значения.",
     ),
-    "Done: all variations already had these images.": (
-        "Hecho: todas las variaciones ya tenían estas imágenes.",
-        "Готово: у всех вариаций уже были эти изображения.",
+    "Additional images are saved to: %s.": ("Las imágenes adicionales se guardan en: %s.", "Доп. изображения сохраняются в: %s."),
+    "This site has no variation gallery, so only the main image of the variations is shared.": (
+        "Este sitio no tiene galería de variaciones, así que solo se comparte la imagen principal.",
+        "На этом сайте нет галереи вариаций, поэтому раздаётся только основное изображение.",
+    ),
+    "Undo": ("Deshacer", "Отменить"),
+    "Main image": ("Imagen principal", "Основное изображение"),
+    "Additional images (gallery)": ("Imágenes adicionales (galería)", "Доп. изображения (галерея)"),
+    "Replace in all": ("Sustituir en todas", "Заменить у всех"),
+    "Only empty ones": ("Solo las vacías", "Только у пустых"),
+    "Cancel": ("Cancelar", "Отмена"),
+    "No variations": ("Sin variaciones", "Нет вариаций"),
+    "all the same": ("todas iguales", "у всех одинаковые"),
+    "Nothing to change: the variations already had these images.": (
+        "Nada que cambiar: las variaciones ya tenían estas imágenes.",
+        "Нечего менять: у вариаций уже были эти изображения.",
     ),
 }
 
 # Plural strings: (singular, plural) -> (es_forms[2], ru_forms[3])
 TR_PLURAL = {
+    ("Last change: %1$s, %2$d variation.", "Last change: %1$s, %2$d variations."): (
+        ("Último cambio: %1$s, %2$d variación.", "Último cambio: %1$s, %2$d variaciones."),
+        ("Последнее изменение: %1$s, %2$d вариация.", "Последнее изменение: %1$s, %2$d вариации.", "Последнее изменение: %1$s, %2$d вариаций."),
+    ),
+    ("Apply to %d variation", "Apply to %d variations"): (
+        ("Aplicar a %d variación", "Aplicar a %d variaciones"),
+        ("Применить к %d вариации", "Применить к %d вариациям", "Применить к %d вариациям"),
+    ),
+    ("%d variation", "%d variations"): (
+        ("%d variación", "%d variaciones"),
+        ("%d вариация", "%d вариации", "%d вариаций"),
+    ),
+    ("%d with other images", "%d with other images"): (
+        ("%d con otras imágenes", "%d con otras imágenes"),
+        ("у %d другие фото", "у %d другие фото", "у %d другие фото"),
+    ),
+    ("%d without images", "%d without images"): (
+        ("%d sin imágenes", "%d sin imágenes"),
+        ("%d без фото", "%d без фото", "%d без фото"),
+    ),
+    ("%d variation already has other images. Replace them too?", "%d variations already have other images. Replace them too?"): (
+        ("%d variación ya tiene otras imágenes. ¿Sustituirlas también?", "%d variaciones ya tienen otras imágenes. ¿Sustituirlas también?"),
+        ("У %d вариации уже другие изображения. Заменить и их?", "У %d вариаций уже другие изображения. Заменить и их?", "У %d вариаций уже другие изображения. Заменить и их?"),
+    ),
+    ("Undone: %d variation restored.", "Undone: %d variations restored."): (
+        ("Deshecho: %d variación restaurada.", "Deshecho: %d variaciones restauradas."),
+        ("Отменено: восстановлена %d вариация.", "Отменено: восстановлены %d вариации.", "Отменено: восстановлено %d вариаций."),
+    ),
+    ("New variations: %d got the images of their value.", "New variations: %d got the images of their value."): (
+        ("Variaciones nuevas: %d recibieron las imágenes de su valor.", "Variaciones nuevas: %d recibieron las imágenes de su valor."),
+        ("Новые вариации: %d получила изображения своего значения.", "Новые вариации: %d получили изображения своего значения.", "Новые вариации: %d получили изображения своего значения."),
+    ),
     (
         "%d variation uses “Any” for this attribute and is not changed.",
         "%d variations use “Any” for this attribute and are not changed.",

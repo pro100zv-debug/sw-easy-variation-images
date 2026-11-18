@@ -1,6 +1,7 @@
 <?php
 /**
  * Admin: "Images by attribute" panel in the Variations tab and its AJAX actions.
+ * The panel only shows data; products change only when a button is pressed.
  *
  * @package SW_Easy_Variation_Images
  */
@@ -17,7 +18,8 @@ final class SW_EVI_Admin {
 		add_action( 'woocommerce_variable_product_before_variations', array( __CLASS__, 'print_panel' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_action( 'wp_ajax_sw_evi_apply', array( __CLASS__, 'ajax_apply' ) );
-		add_action( 'wp_ajax_sw_evi_autofill', array( __CLASS__, 'ajax_autofill' ) );
+		add_action( 'wp_ajax_sw_evi_undo', array( __CLASS__, 'ajax_undo' ) );
+		add_action( 'wp_ajax_sw_evi_fill_new', array( __CLASS__, 'ajax_fill_new' ) );
 		add_action( 'wp_ajax_sw_evi_panel', array( __CLASS__, 'ajax_panel' ) );
 	}
 
@@ -46,8 +48,8 @@ final class SW_EVI_Admin {
 					'useImage'     => __( 'Use this image', 'sw-easy-variation-images' ),
 					'useImages'    => __( 'Use these images', 'sw-easy-variation-images' ),
 					'unsaved'      => __( 'There are unsaved changes in the variations. Save them first, then apply the images.', 'sw-easy-variation-images' ),
-					'unsavedPanel' => __( 'Images chosen but not applied yet.', 'sw-easy-variation-images' ),
-					'working'      => __( 'Applying…', 'sw-easy-variation-images' ),
+					'changed'      => __( 'Changed, not applied yet', 'sw-easy-variation-images' ),
+					'working'      => __( 'Working…', 'sw-easy-variation-images' ),
 					'error'        => __( 'Something went wrong. Reload the page and try again.', 'sw-easy-variation-images' ),
 				),
 			)
@@ -69,21 +71,40 @@ final class SW_EVI_Admin {
 	}
 
 	/**
-	 * HTML of the panel. Also returned by AJAX to refresh it after changes.
+	 * Human name of the place where additional images are stored.
 	 */
-	public static function panel_html( $product ) {
+	private static function provider_label() {
+		switch ( SW_EVI_Core::gallery_provider() ) {
+			case 'woocommerce':
+				return __( 'WooCommerce variation gallery', 'sw-easy-variation-images' );
+			case 'woodmart':
+				return __( 'WoodMart variation gallery', 'sw-easy-variation-images' );
+			case 'wvg':
+				return __( 'Additional Variation Images Gallery plugin', 'sw-easy-variation-images' );
+		}
+		return '';
+	}
+
+	/**
+	 * HTML of the panel. Also returned by AJAX to refresh it after changes.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $message Optional message to show under the header.
+	 */
+	public static function panel_html( $product, $message = '' ) {
 		$attributes = SW_EVI_Core::variation_attributes( $product );
 		if ( ! $attributes ) {
 			return '';
 		}
 
-		$current  = SW_EVI_Core::current_attribute( $product, $attributes );
-		$map      = SW_EVI_Core::get_map( $product->get_id() );
+		$current     = SW_EVI_Core::current_attribute( $product, $attributes );
+		$used        = SW_EVI_Core::is_used( $product->get_id() );
 		$has_gallery = '' !== SW_EVI_Core::gallery_provider();
+		$undo        = SW_EVI_Core::get_undo( $product->get_id() );
 
 		ob_start();
 		?>
-		<div class="toolbar sw-evi-panel" data-product-id="<?php echo esc_attr( $product->get_id() ); ?>">
+		<div class="toolbar sw-evi-panel<?php echo $used ? '' : ' is-collapsed'; ?>" data-product-id="<?php echo esc_attr( $product->get_id() ); ?>">
 			<div class="sw-evi-head">
 				<strong class="sw-evi-title"><?php esc_html_e( 'Images by attribute', 'sw-easy-variation-images' ); ?></strong>
 				<label class="sw-evi-attribute-label">
@@ -94,17 +115,45 @@ final class SW_EVI_Admin {
 						<?php endforeach; ?>
 					</select>
 				</label>
-				<button type="button" class="button-link sw-evi-toggle" aria-expanded="true">
+				<button type="button" class="button-link sw-evi-toggle" aria-expanded="<?php echo $used ? 'true' : 'false'; ?>">
 					<span class="sw-evi-toggle-hide"><?php esc_html_e( 'Hide', 'sw-easy-variation-images' ); ?></span>
 					<span class="sw-evi-toggle-show"><?php esc_html_e( 'Show', 'sw-easy-variation-images' ); ?></span>
 				</button>
 			</div>
 
 			<div class="sw-evi-body">
+				<p class="description">
+					<?php esc_html_e( 'The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed.', 'sw-easy-variation-images' ); ?>
+					<?php if ( $has_gallery ) : ?>
+						<br>
+						<?php
+						/* translators: %s: where the additional images are stored. */
+						echo esc_html( sprintf( __( 'Additional images are saved to: %s.', 'sw-easy-variation-images' ), self::provider_label() ) );
+						?>
+					<?php else : ?>
+						<br><?php esc_html_e( 'This site has no variation gallery, so only the main image of the variations is shared.', 'sw-easy-variation-images' ); ?>
+					<?php endif; ?>
+				</p>
+
+				<?php if ( $message ) : ?>
+					<div class="sw-evi-message" role="status"><?php echo esc_html( $message ); ?></div>
+				<?php endif; ?>
+
+				<?php if ( $undo ) : ?>
+					<div class="sw-evi-undo-bar">
+						<span>
+							<?php
+							/* translators: 1: attribute value, e.g. "Blanco"; 2: number of variations. */
+							echo esc_html( sprintf( _n( 'Last change: %1$s, %2$d variation.', 'Last change: %1$s, %2$d variations.', count( $undo['items'] ), 'sw-easy-variation-images' ), $undo['label'], count( $undo['items'] ) ) );
+							?>
+						</span>
+						<button type="button" class="button button-small sw-evi-undo"><?php esc_html_e( 'Undo', 'sw-easy-variation-images' ); ?></button>
+					</div>
+				<?php endif; ?>
+
 				<?php
 				foreach ( $attributes as $key => $data ) :
 					$groups = SW_EVI_Core::groups( $product, $key );
-					$saved  = $map['attribute'] === $key ? $map['values'] : array();
 					$any    = 0;
 					foreach ( $product->get_children() as $variation_id ) {
 						$variation = wc_get_product( $variation_id );
@@ -118,52 +167,62 @@ final class SW_EVI_Admin {
 							<thead>
 								<tr>
 									<th><?php echo esc_html( $data['label'] ); ?></th>
-									<th><?php esc_html_e( 'Image', 'sw-easy-variation-images' ); ?></th>
+									<th><?php esc_html_e( 'Main image', 'sw-easy-variation-images' ); ?></th>
 									<?php if ( $has_gallery ) : ?>
-										<th>
-											<?php
-											if ( 'woodmart' === SW_EVI_Core::gallery_provider() ) {
-												esc_html_e( 'Additional images (WoodMart)', 'sw-easy-variation-images' );
-											} else {
-												esc_html_e( 'Additional images', 'sw-easy-variation-images' );
-											}
-											?>
-										</th>
+										<th><?php esc_html_e( 'Additional images (gallery)', 'sw-easy-variation-images' ); ?></th>
 									<?php endif; ?>
-									<th class="sw-evi-count-col"><?php esc_html_e( 'Variations', 'sw-easy-variation-images' ); ?></th>
+									<th><?php esc_html_e( 'Variations', 'sw-easy-variation-images' ); ?></th>
+									<th></th>
 								</tr>
 							</thead>
 							<tbody>
 								<?php
 								foreach ( $data['values'] as $value => $label ) :
 									$variations = isset( $groups[ $value ] ) ? $groups[ $value ] : array();
-									list( $image, $gallery ) = self::prefill( $saved, $value, $variations, $has_gallery );
+									$state      = SW_EVI_Core::summarize( $variations );
 									?>
 									<tr data-value="<?php echo esc_attr( $value ); ?>">
 										<td class="sw-evi-label"><?php echo esc_html( $label ); ?></td>
 										<td>
-											<div class="sw-evi-cell" data-multiple="0" data-cleared="0">
-												<input type="hidden" class="sw-evi-ids" value="<?php echo esc_attr( $image ? $image : '' ); ?>">
-												<span class="sw-evi-thumbs"><?php self::thumbs( $image ? array( $image ) : array() ); ?></span>
+											<div class="sw-evi-cell" data-multiple="0">
+												<input type="hidden" class="sw-evi-ids" value="<?php echo esc_attr( $state['image'] ? $state['image'] : '' ); ?>">
+												<span class="sw-evi-thumbs"><?php self::thumbs( $state['image'] ? array( $state['image'] ) : array() ); ?></span>
 												<span class="sw-evi-buttons">
 													<button type="button" class="button button-small sw-evi-choose"><?php esc_html_e( 'Choose', 'sw-easy-variation-images' ); ?></button>
-													<button type="button" class="button-link sw-evi-remove" <?php echo $image ? '' : 'hidden'; ?>><?php esc_html_e( 'Remove', 'sw-easy-variation-images' ); ?></button>
+													<button type="button" class="button-link sw-evi-remove" <?php echo $state['image'] ? '' : 'hidden'; ?>><?php esc_html_e( 'Remove', 'sw-easy-variation-images' ); ?></button>
 												</span>
 											</div>
 										</td>
 										<?php if ( $has_gallery ) : ?>
 											<td>
-												<div class="sw-evi-cell" data-multiple="1" data-cleared="0">
-													<input type="hidden" class="sw-evi-ids" value="<?php echo esc_attr( implode( ',', $gallery ) ); ?>">
-													<span class="sw-evi-thumbs"><?php self::thumbs( $gallery ); ?></span>
+												<div class="sw-evi-cell" data-multiple="1">
+													<input type="hidden" class="sw-evi-ids" value="<?php echo esc_attr( implode( ',', $state['gallery'] ) ); ?>">
+													<span class="sw-evi-thumbs"><?php self::thumbs( $state['gallery'] ); ?></span>
 													<span class="sw-evi-buttons">
 														<button type="button" class="button button-small sw-evi-choose"><?php esc_html_e( 'Choose', 'sw-easy-variation-images' ); ?></button>
-														<button type="button" class="button-link sw-evi-remove" <?php echo $gallery ? '' : 'hidden'; ?>><?php esc_html_e( 'Remove', 'sw-easy-variation-images' ); ?></button>
+														<button type="button" class="button-link sw-evi-remove" <?php echo $state['gallery'] ? '' : 'hidden'; ?>><?php esc_html_e( 'Remove', 'sw-easy-variation-images' ); ?></button>
 													</span>
 												</div>
 											</td>
 										<?php endif; ?>
-										<td class="sw-evi-count-col"><?php echo esc_html( count( $variations ) ); ?></td>
+										<td class="sw-evi-state"><?php self::state_text( $state ); ?></td>
+										<td class="sw-evi-row-actions">
+											<?php if ( $state['total'] ) : ?>
+												<button type="button" class="button sw-evi-apply">
+													<?php
+													/* translators: %d: number of variations. */
+													echo esc_html( sprintf( _n( 'Apply to %d variation', 'Apply to %d variations', $state['total'], 'sw-easy-variation-images' ), $state['total'] ) );
+													?>
+												</button>
+												<div class="sw-evi-confirm" hidden>
+													<p class="sw-evi-confirm-text"></p>
+													<button type="button" class="button button-primary button-small sw-evi-apply-all"><?php esc_html_e( 'Replace in all', 'sw-easy-variation-images' ); ?></button>
+													<button type="button" class="button button-small sw-evi-apply-empty"><?php esc_html_e( 'Only empty ones', 'sw-easy-variation-images' ); ?></button>
+													<button type="button" class="button-link sw-evi-cancel"><?php esc_html_e( 'Cancel', 'sw-easy-variation-images' ); ?></button>
+												</div>
+											<?php endif; ?>
+											<span class="spinner"></span>
+										</td>
 									</tr>
 								<?php endforeach; ?>
 							</tbody>
@@ -178,45 +237,34 @@ final class SW_EVI_Admin {
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
-
-				<p class="sw-evi-actions">
-					<button type="button" class="button button-primary sw-evi-apply"><?php esc_html_e( 'Apply to variations', 'sw-easy-variation-images' ); ?></button>
-					<span class="spinner"></span>
-					<span class="sw-evi-status" role="status"></span>
-				</p>
-				<p class="description">
-					<?php esc_html_e( 'Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them.', 'sw-easy-variation-images' ); ?>
-				</p>
 			</div>
 		</div>
 		<?php
 		return ob_get_clean();
 	}
 
-	/**
-	 * Image and gallery to show for a value: the saved ones, otherwise those
-	 * of the first variation with this value that has them.
-	 *
-	 * @return array( int, int[] )
-	 */
-	private static function prefill( $saved, $value, $variations, $has_gallery ) {
-		$image   = isset( $saved[ $value ]['image'] ) ? absint( $saved[ $value ]['image'] ) : 0;
-		$gallery = isset( $saved[ $value ]['gallery'] ) ? SW_EVI_Core::ids( $saved[ $value ]['gallery'] ) : array();
-
-		if ( $image && ! wp_attachment_is_image( $image ) ) {
-			$image = 0;
+	private static function state_text( $state ) {
+		if ( ! $state['total'] ) {
+			esc_html_e( 'No variations', 'sw-easy-variation-images' );
+			return;
 		}
-
-		foreach ( $variations as $variation ) {
-			if ( ! $image && $variation->get_image_id() ) {
-				$image = (int) $variation->get_image_id();
+		$parts = array(
+			/* translators: %d: number of variations. */
+			sprintf( _n( '%d variation', '%d variations', $state['total'], 'sw-easy-variation-images' ), $state['total'] ),
+		);
+		if ( $state['same'] === $state['total'] ) {
+			$parts[] = __( 'all the same', 'sw-easy-variation-images' );
+		} else {
+			if ( $state['different'] ) {
+				/* translators: %d: number of variations. */
+				$parts[] = sprintf( _n( '%d with other images', '%d with other images', $state['different'], 'sw-easy-variation-images' ), $state['different'] );
 			}
-			if ( $has_gallery && ! $gallery ) {
-				$gallery = SW_EVI_Core::get_gallery( $variation );
+			if ( $state['empty'] ) {
+				/* translators: %d: number of variations. */
+				$parts[] = sprintf( _n( '%d without images', '%d without images', $state['empty'], 'sw-easy-variation-images' ), $state['empty'] );
 			}
 		}
-
-		return array( $image, $has_gallery ? $gallery : array() );
+		echo esc_html( implode( ' · ', $parts ) );
 	}
 
 	/**
@@ -248,60 +296,81 @@ final class SW_EVI_Admin {
 		return $product;
 	}
 
+	private static function fresh_panel( $product, $message = '' ) {
+		return self::panel_html( wc_get_product( $product->get_id() ), $message );
+	}
+
 	public static function ajax_apply() {
 		$product   = self::ajax_product();
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- checked in ajax_product().
 		$attribute = isset( $_POST['attribute'] ) ? sanitize_title( wp_unslash( $_POST['attribute'] ) ) : '';
-		$raw_rows  = isset( $_POST['rows'] ) ? json_decode( wp_unslash( $_POST['rows'] ), true ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized below.
-		$rows      = array();
+		$value     = isset( $_POST['value'] ) ? SW_EVI_Core::value_key( wp_unslash( $_POST['value'] ) ) : '';
+		$image     = isset( $_POST['image'] ) ? absint( $_POST['image'] ) : 0;
+		$gallery   = isset( $_POST['gallery'] ) ? sanitize_text_field( wp_unslash( $_POST['gallery'] ) ) : '';
+		$mode      = isset( $_POST['mode'] ) ? sanitize_key( $_POST['mode'] ) : '';
+		// phpcs:enable
 
-		if ( is_array( $raw_rows ) ) {
-			foreach ( $raw_rows as $row ) {
-				if ( ! is_array( $row ) || ! isset( $row['value'] ) ) {
-					continue;
-				}
-				$rows[ SW_EVI_Core::value_key( $row['value'] ) ] = array(
-					'image'         => isset( $row['image'] ) ? absint( $row['image'] ) : 0,
-					'gallery'       => isset( $row['gallery'] ) ? (string) $row['gallery'] : '',
-					'clear_image'   => ! empty( $row['clear_image'] ),
-					'clear_gallery' => ! empty( $row['clear_gallery'] ),
+		if ( ! in_array( $mode, array( 'all', 'empty' ), true ) ) {
+			$conflicts = SW_EVI_Core::conflicts( $product, $attribute, $value, $image, $gallery );
+			if ( $conflicts ) {
+				wp_send_json_success(
+					array(
+						'confirm' => true,
+						/* translators: %d: number of variations. */
+						'message' => sprintf( _n( '%d variation already has other images. Replace them too?', '%d variations already have other images. Replace them too?', $conflicts, 'sw-easy-variation-images' ), $conflicts ),
+					)
 				);
 			}
+			$mode = 'all';
 		}
 
-		$result = SW_EVI_Core::apply( $product, $attribute, $rows );
-		$count  = $result['variations'];
+		$count = SW_EVI_Core::apply( $product, $attribute, $value, $image, $gallery, $mode );
 
 		wp_send_json_success(
 			array(
 				'changed' => $count,
-				'message' => $count
-					/* translators: %d: number of variations. */
-					? sprintf( _n( 'Done: %d variation updated.', 'Done: %d variations updated.', $count, 'sw-easy-variation-images' ), $count )
-					: __( 'Done: all variations already had these images.', 'sw-easy-variation-images' ),
-				'panel'   => self::panel_html( wc_get_product( $product->get_id() ) ),
+				'panel'   => self::fresh_panel(
+					$product,
+					$count
+						/* translators: %d: number of variations. */
+						? sprintf( _n( 'Done: %d variation updated.', 'Done: %d variations updated.', $count, 'sw-easy-variation-images' ), $count )
+						: __( 'Nothing to change: the variations already had these images.', 'sw-easy-variation-images' )
+				),
 			)
 		);
 	}
 
-	public static function ajax_autofill() {
+	public static function ajax_undo() {
 		$product = self::ajax_product();
-		$count   = SW_EVI_Core::autofill( $product->get_id() );
+		$count   = SW_EVI_Core::undo( $product );
 
 		wp_send_json_success(
 			array(
 				'changed' => $count,
-				'panel'   => self::panel_html( wc_get_product( $product->get_id() ) ),
+				/* translators: %d: number of variations. */
+				'panel'   => self::fresh_panel( $product, sprintf( _n( 'Undone: %d variation restored.', 'Undone: %d variations restored.', $count, 'sw-easy-variation-images' ), $count ) ),
+			)
+		);
+	}
+
+	public static function ajax_fill_new() {
+		$product = self::ajax_product();
+		$count   = SW_EVI_Core::fill_new( $product );
+
+		wp_send_json_success(
+			array(
+				'changed' => $count,
+				'panel'   => self::fresh_panel(
+					$product,
+					/* translators: %d: number of variations. */
+					$count ? sprintf( _n( 'New variations: %d got the images of their value.', 'New variations: %d got the images of their value.', $count, 'sw-easy-variation-images' ), $count ) : ''
+				),
 			)
 		);
 	}
 
 	public static function ajax_panel() {
 		$product = self::ajax_product();
-
-		wp_send_json_success(
-			array(
-				'panel' => self::panel_html( $product ),
-			)
-		);
+		wp_send_json_success( array( 'panel' => self::panel_html( $product ) ) );
 	}
 }

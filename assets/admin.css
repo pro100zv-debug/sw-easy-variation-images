@@ -134,3 +134,63 @@
 .sw-evi-panel .description {
 	margin: 6px 0 0;
 }
+
+/* 1.2 */
+.sw-evi-panel .sw-evi-state {
+	white-space: nowrap;
+	color: #50575e;
+}
+
+.sw-evi-panel tr.is-changed .sw-evi-state {
+	color: #996800;
+	font-weight: 600;
+}
+
+.sw-evi-panel .sw-evi-state.is-error {
+	color: #b32d2e;
+}
+
+.sw-evi-panel .sw-evi-row-actions {
+	width: 1%;
+	white-space: nowrap;
+}
+
+.sw-evi-panel .sw-evi-row-actions .spinner {
+	float: none;
+	margin: 0 0 0 6px;
+}
+
+.sw-evi-panel .sw-evi-confirm[hidden],
+.sw-evi-panel .sw-evi-apply[hidden] {
+	display: none;
+}
+
+.sw-evi-panel .sw-evi-confirm {
+	white-space: normal;
+	min-width: 220px;
+}
+
+.sw-evi-panel .sw-evi-confirm-text {
+	margin: 0 0 6px;
+}
+
+.sw-evi-panel .sw-evi-confirm .button {
+	margin: 0 4px 4px 0;
+}
+
+.sw-evi-panel .sw-evi-message {
+	margin: 8px 0;
+	padding: 8px 12px;
+	border-left: 4px solid #00a32a;
+	background: #fff;
+}
+
+.sw-evi-panel .sw-evi-undo-bar {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 8px 0;
+	padding: 8px 12px;
+	border-left: 4px solid #72aee6;
+	background: #fff;
+}

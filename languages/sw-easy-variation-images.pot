@@ -25,13 +25,22 @@ msgstr ""
 msgid "There are unsaved changes in the variations. Save them first, then apply the images."
 msgstr ""
 
-msgid "Images chosen but not applied yet."
+msgid "Changed, not applied yet"
 msgstr ""
 
-msgid "Applying…"
+msgid "Working…"
 msgstr ""
 
 msgid "Something went wrong. Reload the page and try again."
+msgstr ""
+
+msgid "WooCommerce variation gallery"
+msgstr ""
+
+msgid "WoodMart variation gallery"
+msgstr ""
+
+msgid "Additional Variation Images Gallery plugin"
 msgstr ""
 
 msgid "Images by attribute"
@@ -46,13 +55,23 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
-msgid "Image"
+msgid "The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed."
 msgstr ""
 
-msgid "Additional images (WoodMart)"
+#, php-format
+msgid "Additional images are saved to: %s."
 msgstr ""
 
-msgid "Additional images"
+msgid "This site has no variation gallery, so only the main image of the variations is shared."
+msgstr ""
+
+msgid "Undo"
+msgstr ""
+
+msgid "Main image"
+msgstr ""
+
+msgid "Additional images (gallery)"
 msgstr ""
 
 msgid "Variations"
@@ -70,14 +89,35 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-msgid "Apply to variations"
+msgid "Replace in all"
 msgstr ""
 
-msgid "Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them."
+msgid "Only empty ones"
 msgstr ""
 
-msgid "Done: all variations already had these images."
+msgid "Cancel"
 msgstr ""
+
+msgid "No variations"
+msgstr ""
+
+msgid "all the same"
+msgstr ""
+
+msgid "Nothing to change: the variations already had these images."
+msgstr ""
+
+#, php-format
+msgid "Last change: %1$s, %2$d variation."
+msgid_plural "Last change: %1$s, %2$d variations."
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
+msgid "Apply to %d variation"
+msgid_plural "Apply to %d variations"
+msgstr[0] ""
+msgstr[1] ""
 
 #, php-format
 msgid "%d variation uses “Any” for this attribute and is not changed."
@@ -86,7 +126,43 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, php-format
+msgid "%d variation"
+msgid_plural "%d variations"
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
+msgid "%d with other images"
+msgid_plural "%d with other images"
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
+msgid "%d without images"
+msgid_plural "%d without images"
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
+msgid "%d variation already has other images. Replace them too?"
+msgid_plural "%d variations already have other images. Replace them too?"
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
 msgid "Done: %d variation updated."
 msgid_plural "Done: %d variations updated."
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
+msgid "Undone: %d variation restored."
+msgid_plural "Undone: %d variations restored."
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
+msgid "New variations: %d got the images of their value."
+msgid_plural "New variations: %d got the images of their value."
 msgstr[0] ""
 msgstr[1] ""

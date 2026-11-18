@@ -1,7 +1,8 @@
 <?php
 /**
- * Core logic: groups variations by an attribute value and shares images
- * (main image + WoodMart additional gallery) inside each group.
+ * Core logic. Nothing here runs on its own: every change to products happens
+ * only from an explicit action in the admin panel ("Apply", "Undo") or right
+ * after new variations are created in a product where the panel was used.
  *
  * @package SW_Easy_Variation_Images
  */
@@ -12,13 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class SW_EVI_Core {
 
-	/** Product meta with the chosen attribute and the image per value. */
+	/** Product meta: array( 'attribute' => key ). Exists only where the panel was used. */
 	const META = '_sw_evi_map';
 
-	/** WoodMart: per-variation gallery, comma-separated attachment IDs. */
+	/** Product meta: snapshot of the last "Apply", for "Undo". */
+	const UNDO_META = '_sw_evi_undo';
+
+	/** WoodMart (legacy, deprecated in WoodMart 8.6): per-variation gallery, "1,2,3". */
 	const WD_VARIATION_META = 'wd_additional_variation_images_data';
 
-	/** WoodMart (older storage): array on the parent product, variation_id => "1,2,3". */
+	/** WoodMart (older legacy storage): array on the parent product, variation_id => "1,2,3". */
 	const WD_PARENT_META = 'woodmart_variation_gallery_data';
 
 	/** "Additional Variation Images Gallery for WooCommerce" plugin: array of IDs on the variation. */
@@ -27,30 +31,9 @@ final class SW_EVI_Core {
 	/** Detected gallery provider, cached per request. */
 	private static $provider = null;
 
-	/** True while this plugin itself is writing variations (prevents loops). */
-	private static $busy = false;
-
 	public static function init() {
-		// "Save changes" inside the Variations tab.
-		add_action( 'woocommerce_ajax_save_product_variations', array( __CLASS__, 'on_variations_saved' ), 20 );
-		// Main "Update" button of the product, quick/bulk edit.
-		add_action( 'woocommerce_update_product', array( __CLASS__, 'on_product_updated' ), 20 );
-	}
-
-	/* ---------- Hooks ---------- */
-
-	public static function on_variations_saved( $product_id ) {
-		if ( current_user_can( 'edit_product', $product_id ) ) {
-			self::autofill( $product_id );
-		}
-	}
-
-	public static function on_product_updated( $product_id ) {
-		// Only when a shop manager saves the product, never on the storefront.
-		if ( ! is_admin() || ! current_user_can( 'edit_product', $product_id ) ) {
-			return;
-		}
-		self::autofill( $product_id );
+		// Intentionally no hooks on product save: the plugin never changes
+		// products unless the shop manager presses a button in the panel.
 	}
 
 	/* ---------- Environment ---------- */
@@ -62,7 +45,7 @@ final class SW_EVI_Core {
 		$active = defined( 'WOODMART_THEME_DIR' ) || 'woodmart' === get_template();
 
 		/**
-		 * Force the WoodMart gallery support on or off.
+		 * Force the WoodMart detection on or off.
 		 *
 		 * @param bool $active
 		 */
@@ -71,9 +54,9 @@ final class SW_EVI_Core {
 
 	/**
 	 * Where the additional images (gallery) of a variation are stored:
-	 * - "woodmart":    WoodMart theme;
-	 * - "wvg":         "Additional Variation Images Gallery for WooCommerce" plugin;
-	 * - "woocommerce": native variation gallery of WooCommerce 11.1+;
+	 * - "wvg":         "Additional Variation Images Gallery for WooCommerce" plugin (if installed);
+	 * - "woocommerce": native variation gallery of WooCommerce 11.1+ (also used by WoodMart 8.6+);
+	 * - "woodmart":    WoodMart's own legacy gallery, only with WooCommerce older than 11.1;
 	 * - "":            no variation gallery, only the main image is shared.
 	 */
 	public static function gallery_provider() {
@@ -82,18 +65,18 @@ final class SW_EVI_Core {
 		}
 
 		$provider = '';
-		if ( self::woodmart_active() ) {
-			$provider = 'woodmart';
-		} elseif ( class_exists( 'Woo_Variation_Gallery' ) || function_exists( 'woo_variation_gallery' ) ) {
+		if ( class_exists( 'Woo_Variation_Gallery' ) || function_exists( 'woo_variation_gallery' ) ) {
 			$provider = 'wvg';
 		} elseif ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '11.1', '>=' ) ) {
 			$provider = 'woocommerce';
+		} elseif ( self::woodmart_active() ) {
+			$provider = 'woodmart';
 		}
 
 		/**
 		 * Change or disable the variation gallery support.
 		 *
-		 * @param string $provider "woodmart", "wvg", "woocommerce" or "" (off).
+		 * @param string $provider "woocommerce", "woodmart", "wvg" or "" (off).
 		 */
 		$provider = (string) apply_filters( 'sw_evi_gallery_provider', $provider );
 
@@ -102,7 +85,7 @@ final class SW_EVI_Core {
 	}
 
 	/**
-	 * Forget the detected provider (used by tests and after theme switches).
+	 * Forget the detected provider (used by tests).
 	 */
 	public static function reset_provider() {
 		self::$provider = null;
@@ -157,6 +140,14 @@ final class SW_EVI_Core {
 	}
 
 	/**
+	 * Was the panel already used in this product?
+	 */
+	public static function is_used( $product_id ) {
+		$map = get_post_meta( $product_id, self::META, true );
+		return is_array( $map ) && ! empty( $map['attribute'] );
+	}
+
+	/**
 	 * Attribute used to share images: the saved one, otherwise the first one
 	 * that looks like a color, otherwise the first variation attribute.
 	 */
@@ -168,8 +159,8 @@ final class SW_EVI_Core {
 			return '';
 		}
 
-		$map = self::get_map( $product->get_id() );
-		if ( $map['attribute'] && isset( $attributes[ $map['attribute'] ] ) ) {
+		$map = get_post_meta( $product->get_id(), self::META, true );
+		if ( is_array( $map ) && ! empty( $map['attribute'] ) && isset( $attributes[ $map['attribute'] ] ) ) {
 			return $map['attribute'];
 		}
 
@@ -195,21 +186,6 @@ final class SW_EVI_Core {
 		$default = (string) apply_filters( 'sw_evi_default_attribute', $default, $product, $attributes );
 
 		return isset( $attributes[ $default ] ) ? $default : '';
-	}
-
-	/* ---------- Saved map ---------- */
-
-	/**
-	 * @return array( 'attribute' => string, 'values' => array( value_key => array( 'image' => int, 'gallery' => int[] ) ) )
-	 */
-	public static function get_map( $product_id ) {
-		$map = get_post_meta( $product_id, self::META, true );
-		$map = is_array( $map ) ? $map : array();
-
-		return array(
-			'attribute' => isset( $map['attribute'] ) ? (string) $map['attribute'] : '',
-			'values'    => isset( $map['values'] ) && is_array( $map['values'] ) ? $map['values'] : array(),
-		);
 	}
 
 	/* ---------- Variations ---------- */
@@ -244,6 +220,56 @@ final class SW_EVI_Core {
 		return $groups;
 	}
 
+	/**
+	 * Current state of a group of variations: the most common image and
+	 * gallery, and how many variations match it.
+	 *
+	 * @return array( image, gallery, total, same, empty, different )
+	 */
+	public static function summarize( $variations ) {
+		$has_gallery = '' !== self::gallery_provider();
+		$images      = array();
+		$galleries   = array();
+		$states      = array();
+
+		foreach ( $variations as $variation ) {
+			$image   = (int) $variation->get_image_id();
+			$gallery = $has_gallery ? self::get_gallery( $variation ) : array();
+			$states[] = array( $image, $gallery );
+			if ( $image ) {
+				$images[ $image ] = isset( $images[ $image ] ) ? $images[ $image ] + 1 : 1;
+			}
+			if ( $gallery ) {
+				$k               = implode( ',', $gallery );
+				$galleries[ $k ] = isset( $galleries[ $k ] ) ? $galleries[ $k ] + 1 : 1;
+			}
+		}
+
+		arsort( $images );
+		arsort( $galleries );
+		$main    = $images ? (int) key( $images ) : 0;
+		$gallery = $galleries ? self::ids( (string) key( $galleries ) ) : array();
+
+		$same  = 0;
+		$empty = 0;
+		foreach ( $states as $state ) {
+			if ( $state[0] === $main && $state[1] === $gallery ) {
+				++$same;
+			} elseif ( ! $state[0] && ! $state[1] ) {
+				++$empty;
+			}
+		}
+
+		return array(
+			'image'     => $main,
+			'gallery'   => $gallery,
+			'total'     => count( $variations ),
+			'same'      => $same,
+			'empty'     => $empty,
+			'different' => count( $variations ) - $same - $empty,
+		);
+	}
+
 	/* ---------- Variation gallery (additional images) ---------- */
 
 	/**
@@ -253,6 +279,12 @@ final class SW_EVI_Core {
 	 */
 	public static function get_gallery( $variation ) {
 		switch ( self::gallery_provider() ) {
+			case 'woocommerce':
+				return self::ids( $variation->get_gallery_image_ids( 'edit' ) );
+
+			case 'wvg':
+				return self::ids( get_post_meta( $variation->get_id(), self::WVG_META, true ) );
+
 			case 'woodmart':
 				$raw = get_post_meta( $variation->get_id(), self::WD_VARIATION_META, true );
 				if ( '' === $raw || false === $raw ) {
@@ -262,27 +294,26 @@ final class SW_EVI_Core {
 					}
 				}
 				return self::ids( $raw );
-
-			case 'wvg':
-				return self::ids( get_post_meta( $variation->get_id(), self::WVG_META, true ) );
-
-			case 'woocommerce':
-				return self::ids( $variation->get_gallery_image_ids( 'edit' ) );
 		}
 		return array();
 	}
 
 	/**
 	 * Save the additional images of a variation in the active provider.
+	 * The variation object is saved by the caller.
 	 *
 	 * @param int[] $ids
 	 */
-	public static function set_gallery( $variation, $ids ) {
+	private static function set_gallery( $variation, $ids ) {
 		$ids = self::ids( $ids );
 
 		switch ( self::gallery_provider() ) {
-			case 'woodmart':
-				self::set_woodmart_gallery( $variation, $ids );
+			case 'woocommerce':
+				$variation->set_gallery_image_ids( $ids );
+				// WoodMart may still read its legacy field if that option is on.
+				if ( self::woodmart_active() ) {
+					self::set_woodmart_gallery( $variation, $ids );
+				}
 				break;
 
 			case 'wvg':
@@ -293,9 +324,8 @@ final class SW_EVI_Core {
 				}
 				break;
 
-			case 'woocommerce':
-				$variation->set_gallery_image_ids( $ids );
-				$variation->save();
+			case 'woodmart':
+				self::set_woodmart_gallery( $variation, $ids );
 				break;
 		}
 	}
@@ -312,11 +342,14 @@ final class SW_EVI_Core {
 			delete_post_meta( $vid, self::WD_VARIATION_META );
 		}
 
-		// Also write the parent-level storage: depending on the WoodMart
-		// "data storage method" option, the theme reads one or the other.
 		$parent_id = $variation->get_parent_id();
 		$parent    = get_post_meta( $parent_id, self::WD_PARENT_META, true );
-		$parent    = is_array( $parent ) ? $parent : array();
+		if ( ! is_array( $parent ) ) {
+			if ( ! $ids ) {
+				return;
+			}
+			$parent = array();
+		}
 		if ( $ids ) {
 			$parent[ $vid ] = implode( ',', $ids );
 		} else {
@@ -351,78 +384,108 @@ final class SW_EVI_Core {
 		return $ids;
 	}
 
+	/* ---------- Writing one variation ---------- */
+
+	/**
+	 * @param int        $image   0 = no image.
+	 * @param int[]|null $gallery null = do not touch the gallery.
+	 * @return bool Whether something changed.
+	 */
+	private static function write( $variation, $image, $gallery ) {
+		$changed = false;
+
+		if ( null !== $image && (int) $variation->get_image_id() !== $image ) {
+			$variation->set_image_id( $image );
+			$changed = true;
+		}
+		if ( null !== $gallery && '' !== self::gallery_provider() && self::get_gallery( $variation ) !== $gallery ) {
+			self::set_gallery( $variation, $gallery );
+			$changed = true;
+		}
+		if ( $changed ) {
+			$variation->save();
+		}
+		return $changed;
+	}
+
 	/* ---------- Actions ---------- */
 
 	/**
-	 * Apply images from the panel to all matching variations (overwrites).
-	 *
-	 * @param WC_Product $product
-	 * @param string     $attribute
-	 * @param array      $rows value_key => array( image, gallery, clear_image, clear_gallery )
-	 * @return array( 'variations' => int ) Number of variations changed.
+	 * How many variations of a value already have an image or gallery that
+	 * differs from the new one (and would be replaced).
 	 */
-	public static function apply( $product, $attribute, $rows ) {
+	public static function conflicts( $product, $attribute, $value, $image, $gallery ) {
+		$groups  = self::groups( $product, $attribute );
+		$gallery = self::ids( $gallery );
+		$count   = 0;
+		$check_g = '' !== self::gallery_provider();
+
+		foreach ( isset( $groups[ $value ] ) ? $groups[ $value ] : array() as $variation ) {
+			$cur_image   = (int) $variation->get_image_id();
+			$cur_gallery = $check_g ? self::get_gallery( $variation ) : array();
+			if ( ( $cur_image && $cur_image !== $image ) || ( $cur_gallery && $cur_gallery !== $gallery ) ) {
+				++$count;
+			}
+		}
+		return $count;
+	}
+
+	/**
+	 * Apply the image and gallery of one value to its variations.
+	 *
+	 * @param string $mode "all" = make every variation exactly like this;
+	 *                     "empty" = only fill variations that have no image / no gallery.
+	 * @return int Number of variations changed.
+	 */
+	public static function apply( $product, $attribute, $value, $image, $gallery, $mode = 'all' ) {
 		$attributes = self::variation_attributes( $product );
-		if ( ! isset( $attributes[ $attribute ] ) ) {
-			return array( 'variations' => 0 );
+		if ( ! isset( $attributes[ $attribute ]['values'][ $value ] ) ) {
+			return 0;
 		}
 
-		$has_gallery = '' !== self::gallery_provider();
-		$groups   = self::groups( $product, $attribute );
-		$map      = array(
-			'attribute' => $attribute,
-			'values'    => array(),
-		);
-		$changed  = array();
+		$image   = absint( $image );
+		$image   = $image && wp_attachment_is_image( $image ) ? $image : 0;
+		$gallery = self::ids( $gallery );
+		$groups  = self::groups( $product, $attribute );
+		$items   = isset( $groups[ $value ] ) ? $groups[ $value ] : array();
+		$has_g   = '' !== self::gallery_provider();
 
-		self::$busy = true;
-
-		foreach ( $attributes[ $attribute ]['values'] as $value => $label ) {
-			if ( ! isset( $rows[ $value ] ) ) {
-				continue;
-			}
-			$row     = $rows[ $value ];
-			$image   = absint( $row['image'] );
-			$image   = $image && wp_attachment_is_image( $image ) ? $image : 0;
-			$gallery = self::ids( $row['gallery'] );
-
-			$map['values'][ $value ] = array(
-				'image'   => $image,
-				'gallery' => $gallery,
+		// Snapshot for "Undo".
+		$snapshot = array();
+		foreach ( $items as $variation ) {
+			$snapshot[ $variation->get_id() ] = array(
+				'image'   => (int) $variation->get_image_id(),
+				'gallery' => $has_g ? self::get_gallery( $variation ) : array(),
 			);
+		}
 
-			$variations = isset( $groups[ $value ] ) ? $groups[ $value ] : array();
-
-			foreach ( $variations as $variation ) {
-				$vid = $variation->get_id();
-
-				if ( $image || ! empty( $row['clear_image'] ) ) {
-					if ( (int) $variation->get_image_id() !== $image ) {
-						$variation->set_image_id( $image );
-						$variation->save();
-						$changed[ $vid ] = true;
-					}
-				}
-
-				if ( $has_gallery && ( $gallery || ! empty( $row['clear_gallery'] ) ) ) {
-					$differs = self::get_gallery( $variation ) !== $gallery;
-					// WoodMart keeps the gallery in two places; always rewrite both so
-					// a second "Apply" repairs data saved by older versions.
-					if ( $differs || 'woodmart' === self::gallery_provider() ) {
-						self::set_gallery( $variation, $gallery );
-					}
-					if ( $differs ) {
-						$changed[ $vid ] = true;
-					}
-				}
+		$changed = array();
+		foreach ( $items as $variation ) {
+			if ( 'empty' === $mode ) {
+				$new_image   = ( $image && ! $variation->get_image_id() ) ? $image : null;
+				$new_gallery = ( $gallery && $has_g && ! self::get_gallery( $variation ) ) ? $gallery : null;
+			} else {
+				$new_image   = $image;
+				$new_gallery = $has_g ? $gallery : null;
+			}
+			if ( self::write( $variation, $new_image, $new_gallery ) ) {
+				$changed[] = $variation->get_id();
 			}
 		}
 
-		update_post_meta( $product->get_id(), self::META, $map );
-
-		self::$busy = false;
+		update_post_meta( $product->get_id(), self::META, array( 'attribute' => $attribute ) );
 
 		if ( $changed ) {
+			update_post_meta(
+				$product->get_id(),
+				self::UNDO_META,
+				array(
+					'attribute' => $attribute,
+					'value'     => $value,
+					'label'     => $attributes[ $attribute ]['values'][ $value ],
+					'items'     => array_intersect_key( $snapshot, array_flip( $changed ) ),
+				)
+			);
 			wc_delete_product_transients( $product->get_id() );
 		}
 
@@ -433,35 +496,70 @@ final class SW_EVI_Core {
 		 * @param string $attribute
 		 * @param int[]  $variation_ids Changed variations.
 		 */
-		do_action( 'sw_evi_applied', $product->get_id(), $attribute, array_keys( $changed ) );
+		do_action( 'sw_evi_applied', $product->get_id(), $attribute, $changed );
 
-		return array( 'variations' => count( $changed ) );
+		return count( $changed );
 	}
 
 	/**
-	 * Give an image to every variation that has none, taking it from the
-	 * saved map or from the first variation with the same value that has one.
-	 * Variations that already have an image are never touched.
-	 *
-	 * @return int Number of variations changed.
+	 * @return array|null Last "Apply" that can be undone.
 	 */
-	public static function autofill( $product_id ) {
-		if ( self::$busy ) {
+	public static function get_undo( $product_id ) {
+		$undo = get_post_meta( $product_id, self::UNDO_META, true );
+		return is_array( $undo ) && ! empty( $undo['items'] ) ? $undo : null;
+	}
+
+	/**
+	 * Restore images and galleries as they were before the last "Apply".
+	 *
+	 * @return int Number of variations restored.
+	 */
+	public static function undo( $product ) {
+		$undo = self::get_undo( $product->get_id() );
+		if ( ! $undo ) {
 			return 0;
 		}
 
+		$children = array_map( 'intval', $product->get_children() );
+		$count    = 0;
+		foreach ( $undo['items'] as $vid => $state ) {
+			$vid = (int) $vid;
+			if ( ! in_array( $vid, $children, true ) ) {
+				continue;
+			}
+			$variation = wc_get_product( $vid );
+			if ( ! $variation ) {
+				continue;
+			}
+			$image   = absint( $state['image'] );
+			$image   = $image && wp_attachment_is_image( $image ) ? $image : 0;
+			$gallery = '' !== self::gallery_provider() ? self::ids( $state['gallery'] ) : null;
+			if ( self::write( $variation, $image, $gallery ) ) {
+				++$count;
+			}
+		}
+
+		delete_post_meta( $product->get_id(), self::UNDO_META );
+		wc_delete_product_transients( $product->get_id() );
+
+		return $count;
+	}
+
+	/**
+	 * After new variations were created: give an image and gallery to the
+	 * variations that have none, copying them from the other variations with
+	 * the same value. Only in products where the panel was already used.
+	 *
+	 * @return int Number of variations changed.
+	 */
+	public static function fill_new( $product ) {
 		/**
-		 * Turn automatic filling of empty variation images on or off.
+		 * Turn the automatic filling of new variations on or off.
 		 *
 		 * @param bool $enabled
 		 * @param int  $product_id
 		 */
-		if ( ! apply_filters( 'sw_evi_autofill', true, $product_id ) ) {
-			return 0;
-		}
-
-		$product = wc_get_product( $product_id );
-		if ( ! $product || ! $product->is_type( 'variable' ) ) {
+		if ( ! apply_filters( 'sw_evi_autofill', true, $product->get_id() ) || ! self::is_used( $product->get_id() ) ) {
 			return 0;
 		}
 
@@ -470,49 +568,23 @@ final class SW_EVI_Core {
 			return 0;
 		}
 
-		$map      = self::get_map( $product_id );
-		$saved    = $map['attribute'] === $attribute ? $map['values'] : array();
-		$has_gallery = '' !== self::gallery_provider();
-		$changed  = array();
+		$has_g = '' !== self::gallery_provider();
+		$count = 0;
 
-		self::$busy = true;
-
-		foreach ( self::groups( $product, $attribute ) as $value => $variations ) {
-			$image   = isset( $saved[ $value ]['image'] ) ? absint( $saved[ $value ]['image'] ) : 0;
-			$gallery = isset( $saved[ $value ]['gallery'] ) ? self::ids( $saved[ $value ]['gallery'] ) : array();
-
-			if ( $image && ! wp_attachment_is_image( $image ) ) {
-				$image = 0;
-			}
-
+		foreach ( self::groups( $product, $attribute ) as $variations ) {
+			$state = self::summarize( $variations );
 			foreach ( $variations as $variation ) {
-				if ( ! $image && $variation->get_image_id() ) {
-					$image = (int) $variation->get_image_id();
-				}
-				if ( $has_gallery && ! $gallery ) {
-					$gallery = self::get_gallery( $variation );
-				}
-			}
-
-			foreach ( $variations as $variation ) {
-				if ( $image && ! $variation->get_image_id() ) {
-					$variation->set_image_id( $image );
-					$variation->save();
-					$changed[ $variation->get_id() ] = true;
-				}
-				if ( $has_gallery && $gallery && ! self::get_gallery( $variation ) ) {
-					self::set_gallery( $variation, $gallery );
-					$changed[ $variation->get_id() ] = true;
+				$new_image   = ( $state['image'] && ! $variation->get_image_id() ) ? $state['image'] : null;
+				$new_gallery = ( $has_g && $state['gallery'] && ! self::get_gallery( $variation ) ) ? $state['gallery'] : null;
+				if ( self::write( $variation, $new_image, $new_gallery ) ) {
+					++$count;
 				}
 			}
 		}
 
-		self::$busy = false;
-
-		if ( $changed ) {
-			wc_delete_product_transients( $product_id );
+		if ( $count ) {
+			wc_delete_product_transients( $product->get_id() );
 		}
-
-		return count( $changed );
+		return $count;
 	}
 }

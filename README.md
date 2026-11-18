@@ -8,15 +8,12 @@ Un producto con 2 colores y 8 tallas tiene 16 variaciones. En WooCommerce cada u
 
 ## Funciones
 
-- Panel **«Imágenes por atributo»** en la pestaña **Variaciones** del producto: una fila por cada valor (Azul marino, Blanco…), con su imagen.
-- **Aplicar a las variaciones**: todas las variaciones con ese valor reciben la imagen (sustituye la actual).
-- **Automático**: las variaciones nuevas sin imagen (por ejemplo, tras «Generar variaciones») la reciben solas al crearlas o al guardar. Las que ya tienen imagen no se tocan.
-- Funciona con cualquier atributo, global o personalizado. Por defecto elige el color; se puede cambiar en el propio panel.
-- **Imágenes adicionales** (galería de la variación): si hay dónde guardarlas, aparece una columna más que se reparte igual. Se detecta solo:
-  - tema **WoodMart** (su galería de variaciones);
-  - plugin **Additional Variation Images Gallery for WooCommerce**;
-  - **WooCommerce 11.1+** (galería de variaciones nativa).
-- Con cualquier otro tema (Storefront, Astra, Kadence, Flatsome…) funciona la imagen principal de la variación, que es la estándar de WooCommerce.
+- **No toca nada por sí solo.** El plugin no cambia ningún producto hasta que pulsas un botón en el panel. Los productos donde no lo usas quedan exactamente como estaban.
+- Panel **«Imágenes por atributo»** en la pestaña **Variaciones**: una fila por valor (Azul marino, Blanco…) con la imagen principal y las imágenes adicionales (galería) que tienen ahora sus variaciones, y su estado («todas iguales», «2 con otras imágenes»…).
+- **Aplicar por fila**: el botón «Aplicar a 8 variaciones» cambia solo las variaciones de ese valor. Si alguna ya tiene otras imágenes, pregunta: sustituir en todas o solo en las vacías.
+- **Deshacer** el último cambio.
+- **Variaciones nuevas**: tras «Generar variaciones», las que no tienen imagen reciben las de su valor, solo en productos donde ya usaste el panel.
+- **Galería de variaciones**: se detecta sola — WooCommerce 11.1+ (nativa, la que usa WoodMart 8.6+), plugin Additional Variation Images Gallery, o la galería antigua de WoodMart con WooCommerce anterior a 11.1. Con cualquier otro tema funciona la imagen principal estándar de WooCommerce.
 - Inglés por defecto; español y ruso automáticos según el idioma de WordPress.
 
 ## Instalación
@@ -32,15 +29,15 @@ Las siguientes versiones llegan como actualización normal en **Plugins**.
 ## Uso
 
 1. Elige el atributo en **Compartir imágenes por** (normalmente ya viene el color).
-2. Pulsa **Elegir** en cada valor y selecciona la imagen y, si aparece la columna, las imágenes adicionales.
-3. Pulsa **Aplicar a las variaciones**.
+2. En la fila del valor pulsa **Elegir** y selecciona la imagen principal y, si aparece la columna, las imágenes adicionales.
+3. Pulsa **Aplicar a N variaciones** en esa fila.
 
 Las variaciones con «Cualquier …» en ese atributo no se modifican.
 
 ## Hooks
 
 - `sw_evi_default_attribute` — atributo por defecto (`string $key, WC_Product $product, array $attributes`).
-- `sw_evi_autofill` — devolver `false` para desactivar el relleno automático (`bool $enabled, int $product_id`).
+- `sw_evi_autofill` — devolver `false` para que las variaciones nuevas no reciban imágenes (`bool $enabled, int $product_id`).
 - `sw_evi_gallery_provider` — dónde se guardan las imágenes adicionales: `woodmart`, `wvg`, `woocommerce` o `''` para desactivarlas.
 - `sw_evi_woodmart_gallery` — forzar la detección de WoodMart (`bool $active`).
 - `sw_evi_applied` — acción tras aplicar (`int $product_id, string $attribute, int[] $variation_ids`).

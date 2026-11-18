@@ -10,3 +10,5 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 delete_post_meta_by_key( '_sw_evi_map' );
+
+delete_post_meta_by_key( '_sw_evi_undo' );
