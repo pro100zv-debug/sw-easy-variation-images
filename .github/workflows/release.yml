@@ -57,7 +57,7 @@ jobs:
           mkdir -p build/sw-easy-variation-images
           rsync -a \
             --exclude='.git' --exclude='.github' --exclude='.gitignore' \
-            --exclude='/build' --exclude='/README.md' --exclude='/RELEASE_NOTES.md' --exclude='/tools' --exclude='/docs' \
+            --exclude='/build' --exclude='/README.md' --exclude='/RELEASE_NOTES.md' --exclude='/tools' --exclude='/docs' --exclude='/tests' \
             ./ build/sw-easy-variation-images/
           cd build
           zip -rq sw-easy-variation-images.zip sw-easy-variation-images

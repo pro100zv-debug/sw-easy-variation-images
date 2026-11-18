@@ -58,16 +58,28 @@ final class SW_EVI_Admin {
 
 	/* ---------- Panel ---------- */
 
+	/**
+	 * Prints only a light placeholder: no variation is read on page load.
+	 * The panel content is loaded by AJAX when it is opened.
+	 */
 	public static function print_panel() {
 		global $post;
-		if ( ! $post ) {
+		if ( ! $post || 'product' !== $post->post_type ) {
 			return;
 		}
-		$product = wc_get_product( $post->ID );
-		if ( ! $product || ! $product->is_type( 'variable' ) ) {
-			return;
-		}
-		echo self::panel_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped while building.
+		$used = SW_EVI_Core::is_used( $post->ID );
+		?>
+		<div class="toolbar sw-evi-panel<?php echo $used ? ' is-autoload' : ' is-collapsed'; ?>" data-product-id="<?php echo esc_attr( $post->ID ); ?>">
+			<div class="sw-evi-head">
+				<strong class="sw-evi-title"><?php esc_html_e( 'Images by attribute', 'sw-easy-variation-images' ); ?></strong>
+				<button type="button" class="button-link sw-evi-toggle" aria-expanded="false">
+					<span class="sw-evi-toggle-hide"><?php esc_html_e( 'Hide', 'sw-easy-variation-images' ); ?></span>
+					<span class="sw-evi-toggle-show"><?php esc_html_e( 'Show', 'sw-easy-variation-images' ); ?></span>
+				</button>
+			</div>
+			<div class="sw-evi-body"><span class="spinner is-active sw-evi-loading"></span></div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -86,7 +98,7 @@ final class SW_EVI_Admin {
 	}
 
 	/**
-	 * HTML of the panel. Also returned by AJAX to refresh it after changes.
+	 * Inner HTML of the panel (loaded by AJAX).
 	 *
 	 * @param WC_Product $product
 	 * @param string     $message Optional message to show under the header.
@@ -94,19 +106,17 @@ final class SW_EVI_Admin {
 	public static function panel_html( $product, $message = '' ) {
 		$attributes = SW_EVI_Core::variation_attributes( $product );
 		if ( ! $attributes ) {
-			return '';
+			return '<p class="description">' . esc_html__( 'Add attributes used for variations first and save them.', 'sw-easy-variation-images' ) . '</p>';
 		}
 
 		$current     = SW_EVI_Core::current_attribute( $product, $attributes );
-		$used        = SW_EVI_Core::is_used( $product->get_id() );
 		$has_gallery = '' !== SW_EVI_Core::gallery_provider();
 		$undo        = SW_EVI_Core::get_undo( $product->get_id() );
+		$variations  = SW_EVI_Core::read_variations( $product->get_id() );
 
 		ob_start();
 		?>
-		<div class="toolbar sw-evi-panel<?php echo $used ? '' : ' is-collapsed'; ?>" data-product-id="<?php echo esc_attr( $product->get_id() ); ?>">
-			<div class="sw-evi-head">
-				<strong class="sw-evi-title"><?php esc_html_e( 'Images by attribute', 'sw-easy-variation-images' ); ?></strong>
+			<p class="sw-evi-attribute-row">
 				<label class="sw-evi-attribute-label">
 					<span><?php esc_html_e( 'Share images by:', 'sw-easy-variation-images' ); ?></span>
 					<select class="sw-evi-attribute">
@@ -115,13 +125,7 @@ final class SW_EVI_Admin {
 						<?php endforeach; ?>
 					</select>
 				</label>
-				<button type="button" class="button-link sw-evi-toggle" aria-expanded="<?php echo $used ? 'true' : 'false'; ?>">
-					<span class="sw-evi-toggle-hide"><?php esc_html_e( 'Hide', 'sw-easy-variation-images' ); ?></span>
-					<span class="sw-evi-toggle-show"><?php esc_html_e( 'Show', 'sw-easy-variation-images' ); ?></span>
-				</button>
-			</div>
-
-			<div class="sw-evi-body">
+			</p>
 				<p class="description">
 					<?php esc_html_e( 'The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed.', 'sw-easy-variation-images' ); ?>
 					<?php if ( $has_gallery ) : ?>
@@ -153,14 +157,8 @@ final class SW_EVI_Admin {
 
 				<?php
 				foreach ( $attributes as $key => $data ) :
-					$groups = SW_EVI_Core::groups( $product, $key );
-					$any    = 0;
-					foreach ( $product->get_children() as $variation_id ) {
-						$variation = wc_get_product( $variation_id );
-						if ( $variation && '' === SW_EVI_Core::variation_value( $variation, $key ) ) {
-							++$any;
-						}
-					}
+					$groups = SW_EVI_Core::group_ids( $variations, $key );
+					$any    = SW_EVI_Core::count_any( $variations, $key );
 					?>
 					<div class="sw-evi-rows" data-attribute="<?php echo esc_attr( $key ); ?>" <?php echo $key === $current ? '' : 'hidden'; ?>>
 						<table class="widefat striped sw-evi-table">
@@ -178,8 +176,8 @@ final class SW_EVI_Admin {
 							<tbody>
 								<?php
 								foreach ( $data['values'] as $value => $label ) :
-									$variations = isset( $groups[ $value ] ) ? $groups[ $value ] : array();
-									$state      = SW_EVI_Core::summarize( $variations );
+									$ids   = isset( $groups[ $value ] ) ? $groups[ $value ] : array();
+									$state = SW_EVI_Core::summarize( array_intersect_key( $variations, array_flip( $ids ) ) );
 									?>
 									<tr data-value="<?php echo esc_attr( $value ); ?>">
 										<td class="sw-evi-label"><?php echo esc_html( $label ); ?></td>
@@ -237,8 +235,6 @@ final class SW_EVI_Admin {
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
-			</div>
-		</div>
 		<?php
 		return ob_get_clean();
 	}
@@ -297,21 +293,38 @@ final class SW_EVI_Admin {
 	}
 
 	private static function fresh_panel( $product, $message = '' ) {
-		return self::panel_html( wc_get_product( $product->get_id() ), $message );
+		return self::panel_html( $product, $message );
+	}
+
+	/**
+	 * Runs an AJAX action and turns any PHP error into a JSON error, so a
+	 * problem never breaks the product page.
+	 */
+	private static function guard( $callback ) {
+		try {
+			call_user_func( $callback );
+		} catch ( \Throwable $e ) {
+			wp_send_json_error( array( 'message' => $e->getMessage() ), 500 );
+		}
 	}
 
 	public static function ajax_apply() {
+		self::guard( array( __CLASS__, 'do_apply' ) );
+	}
+
+	public static function do_apply() {
 		$product   = self::ajax_product();
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- checked in ajax_product().
 		$attribute = isset( $_POST['attribute'] ) ? sanitize_title( wp_unslash( $_POST['attribute'] ) ) : '';
 		$value     = isset( $_POST['value'] ) ? SW_EVI_Core::value_key( wp_unslash( $_POST['value'] ) ) : '';
 		$image     = isset( $_POST['image'] ) ? absint( $_POST['image'] ) : 0;
-		$gallery   = isset( $_POST['gallery'] ) ? sanitize_text_field( wp_unslash( $_POST['gallery'] ) ) : '';
+		$image     = $image && wp_attachment_is_image( $image ) ? $image : 0;
+		$gallery   = isset( $_POST['gallery'] ) ? SW_EVI_Core::valid_images( sanitize_text_field( wp_unslash( $_POST['gallery'] ) ) ) : array();
 		$mode      = isset( $_POST['mode'] ) ? sanitize_key( $_POST['mode'] ) : '';
 		// phpcs:enable
 
 		if ( ! in_array( $mode, array( 'all', 'empty' ), true ) ) {
-			$conflicts = SW_EVI_Core::conflicts( $product, $attribute, $value, $image, $gallery );
+			$conflicts = SW_EVI_Core::conflicts( $product->get_id(), $attribute, $value, $image, $gallery );
 			if ( $conflicts ) {
 				wp_send_json_success(
 					array(
@@ -341,6 +354,10 @@ final class SW_EVI_Admin {
 	}
 
 	public static function ajax_undo() {
+		self::guard( array( __CLASS__, 'do_undo' ) );
+	}
+
+	public static function do_undo() {
 		$product = self::ajax_product();
 		$count   = SW_EVI_Core::undo( $product );
 
@@ -354,6 +371,10 @@ final class SW_EVI_Admin {
 	}
 
 	public static function ajax_fill_new() {
+		self::guard( array( __CLASS__, 'do_fill_new' ) );
+	}
+
+	public static function do_fill_new() {
 		$product = self::ajax_product();
 		$count   = SW_EVI_Core::fill_new( $product );
 
@@ -370,6 +391,10 @@ final class SW_EVI_Admin {
 	}
 
 	public static function ajax_panel() {
+		self::guard( array( __CLASS__, 'do_panel' ) );
+	}
+
+	public static function do_panel() {
 		$product = self::ajax_product();
 		wp_send_json_success( array( 'panel' => self::panel_html( $product ) ) );
 	}

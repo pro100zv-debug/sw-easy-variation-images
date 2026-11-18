@@ -9,17 +9,43 @@
 		return $( '.sw-evi-panel' ).first();
 	}
 
-	function replacePanel( html, keepOpen ) {
-		var $old = panel();
-		if ( ! $old.length || ! html ) {
+	function replacePanel( html ) {
+		var $panel = panel();
+		if ( ! $panel.length || 'string' !== typeof html ) {
 			return;
 		}
-		var $new = $( html );
-		if ( keepOpen ) {
-			$new.removeClass( 'is-collapsed' );
-			$new.find( '.sw-evi-toggle' ).attr( 'aria-expanded', 'true' );
+		$panel.find( '.sw-evi-body' ).html( html );
+		$panel.attr( 'data-loaded', '1' );
+	}
+
+	function openPanel() {
+		var $panel = panel();
+		$panel.removeClass( 'is-collapsed' );
+		$panel.find( '.sw-evi-toggle' ).attr( 'aria-expanded', 'true' );
+	}
+
+	// The panel content is loaded only when it is open, never on page load.
+	function loadPanel() {
+		var $panel = panel();
+		if ( ! $panel.length || $panel.hasClass( 'is-collapsed' ) || $panel.attr( 'data-loading' ) ) {
+			return;
 		}
-		$old.replaceWith( $new );
+		$panel.attr( 'data-loading', '1' );
+		$panel.find( '.sw-evi-body' ).html( '<span class="spinner is-active sw-evi-loading"></span>' );
+		request( 'sw_evi_panel' )
+			.done( function ( res ) {
+				if ( res && res.success ) {
+					replacePanel( res.data.panel );
+				} else {
+					$panel.find( '.sw-evi-body' ).html( $( '<p class="sw-evi-error">' ).text( i18n.error ) );
+				}
+			} )
+			.fail( function () {
+				$panel.find( '.sw-evi-body' ).html( $( '<p class="sw-evi-error">' ).text( i18n.error ) );
+			} )
+			.always( function () {
+				panel().removeAttr( 'data-loading' );
+			} );
 	}
 
 	function reloadVariations() {
@@ -88,7 +114,22 @@
 		var collapsed = ! $panel.hasClass( 'is-collapsed' );
 		$panel.toggleClass( 'is-collapsed', collapsed );
 		$( this ).attr( 'aria-expanded', collapsed ? 'false' : 'true' );
+		if ( ! collapsed && '1' !== $panel.attr( 'data-loaded' ) ) {
+			loadPanel();
+		}
 	} );
+
+	// Products where the panel was used: open it once the variations tab is ready.
+	function autoload() {
+		var $panel = panel();
+		if ( $panel.hasClass( 'is-autoload' ) && '1' !== $panel.attr( 'data-loaded' ) ) {
+			openPanel();
+			loadPanel();
+		}
+	}
+	$( autoload );
+	// WooCommerce re-renders the Variations tab after saving attributes.
+	$( document ).on( 'woocommerce_variations_loaded', autoload );
 
 	/* ---------- Media library ---------- */
 
@@ -179,7 +220,7 @@
 					$row.find( '.sw-evi-confirm' ).prop( 'hidden', false );
 					return;
 				}
-				replacePanel( res.data.panel, true );
+				replacePanel( res.data.panel );
 				if ( res.data.changed ) {
 					reloadVariations();
 				}
@@ -223,7 +264,7 @@
 		request( 'sw_evi_undo' )
 			.done( function ( res ) {
 				if ( res && res.success ) {
-					replacePanel( res.data.panel, true );
+					replacePanel( res.data.panel );
 					reloadVariations();
 				} else {
 					$btn.prop( 'disabled', false );
@@ -242,12 +283,13 @@
 		if ( ! panel().length || panel().find( 'tr.is-changed' ).length ) {
 			return;
 		}
+		// Products where the panel was never used are skipped by the server.
 		request( 'sw_evi_fill_new' ).done( function ( res ) {
 			if ( ! res || ! res.success ) {
 				return;
 			}
-			if ( ! panel().find( 'tr.is-changed' ).length ) {
-				replacePanel( res.data.panel, ! panel().hasClass( 'is-collapsed' ) );
+			if ( '1' === panel().attr( 'data-loaded' ) && ! panel().find( 'tr.is-changed' ).length ) {
+				replacePanel( res.data.panel );
 			}
 			if ( res.data.changed ) {
 				reloadVariations();
@@ -257,12 +299,12 @@
 
 	// After saving variations by hand, refresh the counters in the panel.
 	$( document ).on( 'woocommerce_variations_saved', '#woocommerce-product-data', function () {
-		if ( ! panel().length || panel().find( 'tr.is-changed' ).length ) {
+		if ( ! panel().length || '1' !== panel().attr( 'data-loaded' ) || panel().find( 'tr.is-changed' ).length ) {
 			return;
 		}
 		request( 'sw_evi_panel' ).done( function ( res ) {
 			if ( res && res.success && ! panel().find( 'tr.is-changed' ).length ) {
-				replacePanel( res.data.panel, ! panel().hasClass( 'is-collapsed' ) );
+				replacePanel( res.data.panel );
 			}
 		} );
 	} );

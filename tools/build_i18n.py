@@ -53,6 +53,7 @@ TR = {
         "На этом сайте нет галереи вариаций, поэтому раздаётся только основное изображение.",
     ),
     "Undo": ("Deshacer", "Отменить"),
+    "Add attributes used for variations first and save them.": ("Primero añade los atributos usados para variaciones y guárdalos.", "Сначала добавьте атрибуты для вариаций и сохраните их."),
     "Main image": ("Imagen principal", "Основное изображение"),
     "Additional images (gallery)": ("Imágenes adicionales (galería)", "Доп. изображения (галерея)"),
     "Replace in all": ("Sustituir en todas", "Заменить у всех"),

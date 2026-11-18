@@ -35,6 +35,15 @@ msgstr "Procesando…"
 msgid "Something went wrong. Reload the page and try again."
 msgstr "Algo ha fallado. Recarga la página e inténtalo de nuevo."
 
+msgid "Images by attribute"
+msgstr "Imágenes por atributo"
+
+msgid "Hide"
+msgstr "Ocultar"
+
+msgid "Show"
+msgstr "Mostrar"
+
 msgid "WooCommerce variation gallery"
 msgstr "galería de variaciones de WooCommerce"
 
@@ -44,17 +53,11 @@ msgstr "galería de variaciones de WoodMart"
 msgid "Additional Variation Images Gallery plugin"
 msgstr "plugin Additional Variation Images Gallery"
 
-msgid "Images by attribute"
-msgstr "Imágenes por atributo"
+msgid "Add attributes used for variations first and save them."
+msgstr "Primero añade los atributos usados para variaciones y guárdalos."
 
 msgid "Share images by:"
 msgstr "Compartir imágenes por:"
-
-msgid "Hide"
-msgstr "Ocultar"
-
-msgid "Show"
-msgstr "Mostrar"
 
 msgid "The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed."
 msgstr "El panel muestra las imágenes actuales de las variaciones. No se cambia nada hasta que pulses «Aplicar» en una fila: solo cambian las variaciones de ese valor."

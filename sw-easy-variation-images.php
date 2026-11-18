@@ -3,7 +3,7 @@
  * Plugin Name:          SW Easy Variation Images
  * Plugin URI:           https://github.com/pro100zv-debug/sw-easy-variation-images
  * Description:          Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Works with any theme; supports variation galleries of WooCommerce, WoodMart and Additional Variation Images Gallery.
- * Version:              1.2.0
+ * Version:              1.3.0
  * Author:               SergioWeb
  * Author URI:           https://sergioweb.es/
  * Requires at least:    6.0
@@ -22,13 +22,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SW_EVI_VERSION', '1.2.0' );
+define( 'SW_EVI_VERSION', '1.3.0' );
 define( 'SW_EVI_FILE', __FILE__ );
 define( 'SW_EVI_DIR', __DIR__ );
 
 /* ---------- Updates from GitHub ---------- */
 
-if ( is_readable( __DIR__ . '/plugin-update-checker/plugin-update-checker.php' ) ) {
+// Only in the admin and in WP-Cron: never on the storefront.
+if ( ( is_admin() || wp_doing_cron() ) && is_readable( __DIR__ . '/plugin-update-checker/plugin-update-checker.php' ) ) {
 	require_once __DIR__ . '/plugin-update-checker/plugin-update-checker.php';
 
 	$sw_evi_updater = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(

@@ -34,6 +34,15 @@ msgstr ""
 msgid "Something went wrong. Reload the page and try again."
 msgstr ""
 
+msgid "Images by attribute"
+msgstr ""
+
+msgid "Hide"
+msgstr ""
+
+msgid "Show"
+msgstr ""
+
 msgid "WooCommerce variation gallery"
 msgstr ""
 
@@ -43,16 +52,10 @@ msgstr ""
 msgid "Additional Variation Images Gallery plugin"
 msgstr ""
 
-msgid "Images by attribute"
+msgid "Add attributes used for variations first and save them."
 msgstr ""
 
 msgid "Share images by:"
-msgstr ""
-
-msgid "Hide"
-msgstr ""
-
-msgid "Show"
 msgstr ""
 
 msgid "The panel shows the current images of the variations. Nothing changes until you press “Apply” in a row: only the variations of that value are changed."
