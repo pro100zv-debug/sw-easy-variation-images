@@ -1,0 +1,136 @@
+/* SW Easy Variation Images — admin panel */
+
+#variable_product_options .sw-evi-panel {
+	padding: 12px;
+	border-bottom: 1px solid #eee;
+	background: #fbfbfb;
+}
+
+.sw-evi-panel .sw-evi-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
+}
+
+.sw-evi-panel .sw-evi-title {
+	font-size: 13px;
+}
+
+.sw-evi-panel .sw-evi-attribute-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.sw-evi-panel .sw-evi-toggle {
+	margin-left: auto;
+	text-decoration: none;
+}
+
+.sw-evi-panel .sw-evi-toggle-show,
+.sw-evi-panel.is-collapsed .sw-evi-toggle-hide {
+	display: none;
+}
+
+.sw-evi-panel.is-collapsed .sw-evi-toggle-show {
+	display: inline;
+}
+
+.sw-evi-panel.is-collapsed .sw-evi-body {
+	display: none;
+}
+
+.sw-evi-panel .sw-evi-body {
+	margin-top: 10px;
+}
+
+.sw-evi-panel .sw-evi-rows[hidden] {
+	display: none;
+}
+
+.sw-evi-panel .sw-evi-table {
+	border: 1px solid #e2e4e7;
+}
+
+.sw-evi-panel .sw-evi-table th,
+.sw-evi-panel .sw-evi-table td {
+	padding: 8px 10px;
+	vertical-align: middle;
+}
+
+.sw-evi-panel .sw-evi-label {
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.sw-evi-panel .sw-evi-count-col {
+	width: 1%;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.sw-evi-panel .sw-evi-cell {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.sw-evi-panel .sw-evi-thumbs {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.sw-evi-panel .sw-evi-thumbs:empty {
+	display: none;
+}
+
+.sw-evi-panel .sw-evi-thumbs img {
+	display: block;
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	background: #fff;
+}
+
+.sw-evi-panel .sw-evi-buttons {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.sw-evi-panel .sw-evi-remove {
+	color: #b32d2e;
+}
+
+.sw-evi-panel .sw-evi-remove[hidden] {
+	display: none;
+}
+
+.sw-evi-panel .sw-evi-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 12px 0 4px;
+}
+
+.sw-evi-panel .sw-evi-actions .spinner {
+	float: none;
+	margin: 0;
+}
+
+.sw-evi-panel .sw-evi-status.is-error {
+	color: #b32d2e;
+}
+
+.sw-evi-panel.is-dirty .sw-evi-status {
+	color: #996800;
+}
+
+.sw-evi-panel .description {
+	margin: 6px 0 0;
+}

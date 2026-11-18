@@ -1,0 +1,4 @@
+- Primera versión: panel «Imágenes por atributo» en la pestaña Variaciones, una imagen por valor (por ejemplo, por color) para todas sus variaciones.
+- Relleno automático de las variaciones nuevas sin imagen.
+- Compatibilidad con la galería de imágenes adicionales de variaciones de WoodMart.
+- Inglés por defecto; español y ruso automáticos según el idioma de WordPress.

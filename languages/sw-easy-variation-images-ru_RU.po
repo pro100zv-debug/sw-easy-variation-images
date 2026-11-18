@@ -1,0 +1,92 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SW Easy Variation Images\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Domain: sw-easy-variation-images\n"
+
+msgid "Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Compatible with the WoodMart variation gallery."
+msgstr "Задайте одно фото для значения атрибута (например, для цвета) — и все вариации WooCommerce с этим значением получат его. Совместим с галереей вариаций WoodMart."
+
+msgid "Choose image"
+msgstr "Выбрать изображение"
+
+msgid "Choose additional images"
+msgstr "Выбрать дополнительные изображения"
+
+msgid "Use this image"
+msgstr "Использовать это изображение"
+
+msgid "Use these images"
+msgstr "Использовать эти изображения"
+
+msgid "There are unsaved changes in the variations. Save them first, then apply the images."
+msgstr "В вариациях есть несохранённые изменения. Сначала сохраните их, затем примените изображения."
+
+msgid "Images chosen but not applied yet."
+msgstr "Изображения выбраны, но ещё не применены."
+
+msgid "Applying…"
+msgstr "Применяю…"
+
+msgid "Something went wrong. Reload the page and try again."
+msgstr "Что-то пошло не так. Перезагрузите страницу и попробуйте ещё раз."
+
+msgid "Images by attribute"
+msgstr "Изображения по атрибуту"
+
+msgid "Share images by:"
+msgstr "Общие изображения по:"
+
+msgid "Hide"
+msgstr "Скрыть"
+
+msgid "Show"
+msgstr "Показать"
+
+msgid "Image"
+msgstr "Изображение"
+
+msgid "Additional images (WoodMart)"
+msgstr "Доп. изображения (WoodMart)"
+
+msgid "Variations"
+msgstr "Вариации"
+
+msgid "Choose"
+msgstr "Выбрать"
+
+msgid "Remove"
+msgstr "Убрать"
+
+msgid "Choose"
+msgstr "Выбрать"
+
+msgid "Remove"
+msgstr "Убрать"
+
+msgid "Apply to variations"
+msgstr "Применить к вариациям"
+
+msgid "Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them."
+msgstr "Выберите изображение для каждого значения и нажмите «Применить к вариациям»: все вариации с этим значением получат его вместо текущего. Новые вариации без изображения получают его автоматически при сохранении."
+
+msgid "Done: all variations already had these images."
+msgstr "Готово: у всех вариаций уже были эти изображения."
+
+#, php-format
+msgid "%d variation uses “Any” for this attribute and is not changed."
+msgid_plural "%d variations use “Any” for this attribute and are not changed."
+msgstr[0] "%d вариация использует «Любое значение» для этого атрибута и не изменяется."
+msgstr[1] "%d вариации используют «Любое значение» для этого атрибута и не изменяются."
+msgstr[2] "%d вариаций используют «Любое значение» для этого атрибута и не изменяются."
+
+#, php-format
+msgid "Done: %d variation updated."
+msgid_plural "Done: %d variations updated."
+msgstr[0] "Готово: обновлена %d вариация."
+msgstr[1] "Готово: обновлены %d вариации."
+msgstr[2] "Готово: обновлено %d вариаций."

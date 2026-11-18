@@ -1,0 +1,90 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SW Easy Variation Images\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: sw-easy-variation-images\n"
+
+msgid "Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Compatible with the WoodMart variation gallery."
+msgstr "Asigna una imagen por valor de atributo (por ejemplo, por color) y todas las variaciones de WooCommerce con ese valor la reciben. Compatible con la galería de variaciones de WoodMart."
+
+msgid "Choose image"
+msgstr "Elegir imagen"
+
+msgid "Choose additional images"
+msgstr "Elegir imágenes adicionales"
+
+msgid "Use this image"
+msgstr "Usar esta imagen"
+
+msgid "Use these images"
+msgstr "Usar estas imágenes"
+
+msgid "There are unsaved changes in the variations. Save them first, then apply the images."
+msgstr "Hay cambios sin guardar en las variaciones. Guárdalos primero y después aplica las imágenes."
+
+msgid "Images chosen but not applied yet."
+msgstr "Imágenes elegidas, pero aún no aplicadas."
+
+msgid "Applying…"
+msgstr "Aplicando…"
+
+msgid "Something went wrong. Reload the page and try again."
+msgstr "Algo ha fallado. Recarga la página e inténtalo de nuevo."
+
+msgid "Images by attribute"
+msgstr "Imágenes por atributo"
+
+msgid "Share images by:"
+msgstr "Compartir imágenes por:"
+
+msgid "Hide"
+msgstr "Ocultar"
+
+msgid "Show"
+msgstr "Mostrar"
+
+msgid "Image"
+msgstr "Imagen"
+
+msgid "Additional images (WoodMart)"
+msgstr "Imágenes adicionales (WoodMart)"
+
+msgid "Variations"
+msgstr "Variaciones"
+
+msgid "Choose"
+msgstr "Elegir"
+
+msgid "Remove"
+msgstr "Quitar"
+
+msgid "Choose"
+msgstr "Elegir"
+
+msgid "Remove"
+msgstr "Quitar"
+
+msgid "Apply to variations"
+msgstr "Aplicar a las variaciones"
+
+msgid "Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them."
+msgstr "Elige una imagen para cada valor y pulsa «Aplicar a las variaciones»: todas las variaciones con ese valor la reciben y sustituye a su imagen actual. Las variaciones nuevas sin imagen la reciben automáticamente al guardarlas."
+
+msgid "Done: all variations already had these images."
+msgstr "Hecho: todas las variaciones ya tenían estas imágenes."
+
+#, php-format
+msgid "%d variation uses “Any” for this attribute and is not changed."
+msgid_plural "%d variations use “Any” for this attribute and are not changed."
+msgstr[0] "%d variación usa «Cualquiera» en este atributo y no se modifica."
+msgstr[1] "%d variaciones usan «Cualquiera» en este atributo y no se modifican."
+
+#, php-format
+msgid "Done: %d variation updated."
+msgid_plural "Done: %d variations updated."
+msgstr[0] "Hecho: %d variación actualizada."
+msgstr[1] "Hecho: %d variaciones actualizadas."

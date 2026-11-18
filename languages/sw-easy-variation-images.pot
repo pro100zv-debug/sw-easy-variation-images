@@ -1,0 +1,89 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SW Easy Variation Images\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: sw-easy-variation-images\n"
+
+msgid "Set one image per attribute value (for example, per color) and every matching WooCommerce variation gets it. Compatible with the WoodMart variation gallery."
+msgstr ""
+
+msgid "Choose image"
+msgstr ""
+
+msgid "Choose additional images"
+msgstr ""
+
+msgid "Use this image"
+msgstr ""
+
+msgid "Use these images"
+msgstr ""
+
+msgid "There are unsaved changes in the variations. Save them first, then apply the images."
+msgstr ""
+
+msgid "Images chosen but not applied yet."
+msgstr ""
+
+msgid "Applying…"
+msgstr ""
+
+msgid "Something went wrong. Reload the page and try again."
+msgstr ""
+
+msgid "Images by attribute"
+msgstr ""
+
+msgid "Share images by:"
+msgstr ""
+
+msgid "Hide"
+msgstr ""
+
+msgid "Show"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+msgid "Additional images (WoodMart)"
+msgstr ""
+
+msgid "Variations"
+msgstr ""
+
+msgid "Choose"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Choose"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Apply to variations"
+msgstr ""
+
+msgid "Choose an image for each value and click “Apply to variations”: every variation with that value gets it, replacing its current image. New variations without an image get it automatically when you save them."
+msgstr ""
+
+msgid "Done: all variations already had these images."
+msgstr ""
+
+#, php-format
+msgid "%d variation uses “Any” for this attribute and is not changed."
+msgid_plural "%d variations use “Any” for this attribute and are not changed."
+msgstr[0] ""
+msgstr[1] ""
+
+#, php-format
+msgid "Done: %d variation updated."
+msgid_plural "Done: %d variations updated."
+msgstr[0] ""
+msgstr[1] ""
